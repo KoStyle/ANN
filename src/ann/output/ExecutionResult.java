@@ -237,6 +237,8 @@ public class ExecutionResult {
 	public void setNoiseResults(ArrayList<NoiseResult> noiseResults) {
 		this.noiseResults = noiseResults;
 	}
+	
+	
 	public void writeNoiseResults(File nr) throws IOException {
 		Workbook wb = new XSSFWorkbook();
 		 
@@ -246,7 +248,7 @@ public class ExecutionResult {
 			wb.close();
 			return;
 		}
-		//comment
+		
 		
 		Row row = sheet.createRow(rowCount);
 		row.createCell(0).setCellValue("Noise Level");
