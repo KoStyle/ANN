@@ -1,4 +1,4 @@
-package ls.assignment1.elements;
+package ann.elements;
 
 public class ExtInput {
 	private double value;

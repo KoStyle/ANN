@@ -1,7 +1,7 @@
 /**
  * 
  */
-package ls.assignment1;
+package ann;
 
 import java.io.File;
 import java.io.IOException;
@@ -10,22 +10,20 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Random;
 
-
-import ls.assignment1.elements.ExtInput;
-import ls.assignment1.elements.Input;
-import ls.assignment1.elements.Neuron;
-import ls.assignment1.input.Case;
-import ls.assignment1.input.Read;
-import ls.assignment1.output.ConfigurationTestResults;
-import ls.assignment1.output.ExecutionResult;
-import ls.assignment1.output.NeuronValues;
-import ls.assignment1.output.NoiseResult;
-import ls.assignment1.output.TrainAndTestError;
-import ls.assignment1.util.ANNConfig;
-import ls.assignment1.util.Individual;
-import ls.assignment1.util.MyRandom;
-import ls.assignment1.util.NeuronConfig;
-import main.Converter;
+import ann.elements.ExtInput;
+import ann.elements.Input;
+import ann.elements.Neuron;
+import ann.input.Case;
+import ann.input.Read;
+import ann.output.ConfigurationTestResults;
+import ann.output.ExecutionResult;
+import ann.output.NeuronValues;
+import ann.output.NoiseResult;
+import ann.output.TrainAndTestError;
+import ann.util.ANNConfig;
+import ann.util.Individual;
+import ann.util.MyRandom;
+import ann.util.NeuronConfig;
 
 /**
  * <p>

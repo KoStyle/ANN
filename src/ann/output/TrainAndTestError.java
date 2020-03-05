@@ -1,4 +1,4 @@
-package ls.assignment1.output;
+package ann.output;
 
 public class TrainAndTestError{
 	private int cicle;

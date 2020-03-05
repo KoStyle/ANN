@@ -1,13 +1,13 @@
 /**
  * 
  */
-package ls.assignment1.elements;
+package ann.elements;
 
 import java.util.ArrayList;
 
-import ls.assignment1.util.NeuronConfig;
-import ls.assignment1.util.Sigmoid;
-import ls.assignment1.util.UpValueData;
+import ann.util.NeuronConfig;
+import ann.util.Sigmoid;
+import ann.util.UpValueData;
 
 /**
  * @author konomi

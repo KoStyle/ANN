@@ -1,7 +1,7 @@
 /**
  * 
  */
-package ls.assignment1.input;
+package ann.input;
 
 import java.util.ArrayList;
 import java.util.Random;

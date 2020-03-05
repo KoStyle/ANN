@@ -1,4 +1,4 @@
-package ls.assignment1.util;
+package ann.util;
 
 public class NeuronConfig {
 	private double failure=0, alfa=1, alfa2=1, beta=1, beta2=1, gamma=1, gamma2=1, lf;

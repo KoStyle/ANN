@@ -1,18 +1,16 @@
-package ls.assignment1.output;
+package ann.output;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import ls.assignment1.input.Case;
-
-import org.apache.poi.ss.usermodel.CreationHelper;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
+import ann.input.Case;
 
 public class ExecutionResult {
 	private ArrayList<TrainAndTestError> evolution= null;
@@ -102,7 +100,7 @@ public class ExecutionResult {
 	
 	public void writeExecutionResult(File file) throws IOException{
 		Workbook wb = new XSSFWorkbook();
-		CreationHelper createHelper = wb.getCreationHelper();
+		
 		Sheet sheet = wb.createSheet("Hoja 1");
 		int rowCount=0;
 		
@@ -143,11 +141,12 @@ public class ExecutionResult {
 		}
 		FileOutputStream fileOut = new FileOutputStream(file);
 		wb.write(fileOut);
+		wb.close();
 		fileOut.close();
 	}
 	public void writeEvolution(File evolution2) throws IOException {
 		Workbook wb = new XSSFWorkbook();
-		CreationHelper createHelper = wb.getCreationHelper();
+		
 		Sheet sheet = wb.createSheet("Hoja 1");
 		int rowCount=0;
 		
@@ -166,6 +165,7 @@ public class ExecutionResult {
 		
 		FileOutputStream fileOut = new FileOutputStream(evolution2);
 	    wb.write(fileOut);
+	    wb.close();
 	    fileOut.close();
 	}
 	public ArrayList<NeuronValues> getComboNv() {
@@ -194,10 +194,11 @@ public class ExecutionResult {
 	}
 	public void writeFailures(File failures2) throws IOException {
 		Workbook wb = new XSSFWorkbook();
-		CreationHelper createHelper = wb.getCreationHelper();
+		
 		Sheet sheet = wb.createSheet("Hoja 1");
 		int rowCount=0;
 		if( this.failures.isEmpty()){
+			wb.close();
 			return;
 		}
 		Case x1= this.failures.get(0);
@@ -223,6 +224,7 @@ public class ExecutionResult {
 		
 		FileOutputStream fileOut = new FileOutputStream(failures2);
 	    wb.write(fileOut);
+	    wb.close();
 	    fileOut.close();
 	}
 	public void addNeuronValuesExtra(NeuronValues nv2) {
@@ -237,13 +239,14 @@ public class ExecutionResult {
 	}
 	public void writeNoiseResults(File nr) throws IOException {
 		Workbook wb = new XSSFWorkbook();
-		CreationHelper createHelper = wb.getCreationHelper();
+		 
 		Sheet sheet = wb.createSheet("Hoja 1");
 		int rowCount=0;
 		if( this.noiseResults.isEmpty()){
+			wb.close();
 			return;
 		}
-		
+		//comment
 		
 		Row row = sheet.createRow(rowCount);
 		row.createCell(0).setCellValue("Noise Level");
@@ -257,6 +260,7 @@ public class ExecutionResult {
 		
 		FileOutputStream fileOut = new FileOutputStream(nr);
 	    wb.write(fileOut);
+	    wb.close();
 	    fileOut.close();
 	}
 }

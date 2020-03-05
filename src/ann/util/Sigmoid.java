@@ -1,4 +1,4 @@
-package ls.assignment1.util;
+package ann.util;
 
 /**
  * This class contains a type of sigmoid function following this structure

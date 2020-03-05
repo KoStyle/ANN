@@ -1,4 +1,4 @@
-package ls.assignment1.util;
+package ann.util;
 
 import java.util.Random;
 

@@ -1,4 +1,4 @@
-package ls.assignment1.output;
+package ann.output;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -638,7 +638,7 @@ public class ConfigurationTestResults {
 	
 	private void writeNeuronsIterations(File f, ArrayList<ArrayList<NeuronValues>> iteration2) throws IOException {
 		Workbook wb = new XSSFWorkbook();
-		CreationHelper createHelper = wb.getCreationHelper();
+		
 		Sheet sheet = wb.createSheet("Hoja 1");
 		int rowCount=0;
 		Row row = sheet.createRow(rowCount);
@@ -664,6 +664,7 @@ public class ConfigurationTestResults {
 		}
 		FileOutputStream fileOut = new FileOutputStream(f);
 		wb.write(fileOut);
+		wb.close();
 		fileOut.close();
 		
 	}
@@ -671,7 +672,7 @@ public class ConfigurationTestResults {
 	private void writeNeuronsComboIterations(File f, ArrayList<ArrayList<NeuronValues>> iteration2) throws IOException {
 		
 		Workbook wb = new XSSFWorkbook();
-		CreationHelper createHelper = wb.getCreationHelper();
+		
 		Sheet sheet = wb.createSheet("Hoja 1");
 		int rowCount=0;
 		Row row = sheet.createRow(rowCount);
@@ -698,6 +699,7 @@ public class ConfigurationTestResults {
 		}
 		FileOutputStream fileOut = new FileOutputStream(f);
 		wb.write(fileOut);
+		wb.close();
 		fileOut.close();
 	}
 	/**

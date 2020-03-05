@@ -1,6 +1,6 @@
-package ls.assignment1.output;
+package ann.output;
 
-import ls.assignment1.util.UpValueData;
+import ann.util.UpValueData;
 
 public class NeuronValues {
 	private int neuronID, neuronID2;

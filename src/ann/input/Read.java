@@ -1,11 +1,11 @@
-package ls.assignment1.input;
+package ann.input;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 
-import ls.assignment1.util.NeuronConfig;
+import ann.util.NeuronConfig;
 
 public class Read {
 

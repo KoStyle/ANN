@@ -1,4 +1,4 @@
-package ls.assignment1.util;
+package ann.util;
 
 public class UpValueData {
 	private double mean;
