@@ -117,18 +117,18 @@ public class ANN {
 	private static final double MEDPEN = 0.025;
 	private static final double LOWPEN = 0.0125;
 
-	private static final int INDVIDUAL_PAIRS = 5;
-	private static final double GENERR = -0.01;
-	private static final int GENERATIONS = 400;
-	private final static double CROSSOVER = 0.8;
+	private static int INDVIDUAL_PAIRS = 5;
+	private static double GENERR = -0.01;
+	private static int GENERATIONS = 400;
+	private final double CROSSOVER = 0.8;
 	/**
 	 * Determines the size of the mutation. With a big constant the probability for big mutations raises.
 	 */
-	private static final double MUTCTE = 0.4;
+	private static double MUTCTE = 0.4;
 	/**
 	 * Mutation probability of a chromsome.
 	 */
-	private static final double MUTFACT = 0.8;
+	private static double MUTFACT = 0.8;
 
 	// TEST BENCH
 	private static int ITERATIONS = 1;
@@ -211,6 +211,8 @@ public class ANN {
 		for (int i = 0; i < this.nParam; i++) {
 			this.extInputs.add(new ExtInput(0));
 		}
+		
+		//TODO Remember the why of this
 		this.extInputs.add(new ExtInput(1));
 
 		/*
@@ -240,6 +242,7 @@ public class ANN {
 		 */
 		for (int i = 0; i < this.nHiddenLayers; i++) {
 
+			//TODO maybe this could be unified?
 			for (int j = 0; j < this.nNeuHidLay; j++) {
 				Neuron n = new Neuron(ncfg.get(neuronIDCount));
 
@@ -1638,9 +1641,9 @@ public class ANN {
 		ann.testBench(cases, root);
 	}
 	/**
-	 * This method does a single training of the netwokr with a specified algorithm and stores it in
+	 * This method does a single training of the network with a specified algorithm and stores it in
 	 * a 'ExecutionResult' object.
-	 * @param type The algoritm used
+	 * @param type The algorithm used
 	 * @param set The full case set
 	 * @param iteration the training identifier.
 	 * @return

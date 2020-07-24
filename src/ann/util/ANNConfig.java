@@ -3,8 +3,10 @@ package ann.util;
 public class ANNConfig {
 
 	private int nParam, nHidLay, neuronsHidLay, nOutput;
-	double mFactor;
+	double mFactor, mCte, crossover, generr;
+	int generations, pairs;
 	double lFactor;
+	boolean agon = false, bpon=false, appon=false;
 	
 	public int getParam() {
 		return this.nParam;

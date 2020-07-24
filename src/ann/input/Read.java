@@ -4,10 +4,9 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
-import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.*;
 
+import ann.util.ANNConfig;
 import ann.util.NeuronConfig;
 
 public class Read {
@@ -16,6 +15,7 @@ public class Read {
 	public static ArrayList<Double> min = null;
 	public static String selectCasesStatement = "";
 	public static String selectOutputStatement = "";
+	public static String selectSetUpStatement = "SELECT * FROM NNSETUPS WHERE id_setup = ?";
 	public static final String IronMan = "C:\\Users\\Konomi\\Dropbox\\workspace";
 	public static final String SilverCenturion = "C:\\Users\\Manu\\Dropbox\\workspace";
 	public static final String rutaBase=null;
@@ -64,6 +64,35 @@ public class Read {
 		rs.close();		
 		query.close();
 		return caseSet;
+	}
+
+	public static ANNConfig readConfigDB(Connection conn, int id_setup) {
+		
+		try {
+			ANNConfig ac= new ANNConfig();
+			PreparedStatement query = conn.prepareStatement(selectSetUpStatement);
+			query.setInt(1, id_setup); //I hate hate hate that the first index is 1
+			ResultSet rs = query.executeQuery();
+			
+			if(rs.next()) {
+				ac.setmFactor(rs.getDouble("ga_mutfact"));
+				ac.setnParam(rs.getInt("input_l_size"));
+				ac.setnHidLay(rs.getInt("hidden_layers"));
+				ac.setNeuronsHidLay(rs.getInt("hidden_l_size"));
+				ac.setnOutput(rs.getInt("output_l_size"));
+				ac.setlFactor(rs.getDouble("bp_lfact"));
+			}
+			
+			rs.close();
+			query.close();
+			return ac;
+			
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} 
+		
+		return null;
 	}
 	
 	@Deprecated
@@ -248,6 +277,8 @@ public class Read {
 			NeuronConfig c = new NeuronConfig(dlf, i);
 			configs.add(c);
 		}
+		
+		/*In case we want individual configurations for certain neurons*/
 		if (file != null) {
 			try {
 
@@ -257,6 +288,7 @@ public class Read {
 				while ((line = filein.readLine()) != null) {
 					NeuronConfig c = new NeuronConfig(0, 0);
 
+					//TODO This should be done in a better way, like seeking the next space instead of this damned code repetition
 					// ID
 					if (i < 10) {
 						int index = line.indexOf("ID");
