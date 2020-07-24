@@ -13,9 +13,7 @@ public class Read {
 
 	public static ArrayList<Double> max = null;
 	public static ArrayList<Double> min = null;
-	public static String selectCasesStatement = "";
-	public static String selectOutputStatement = "";
-	public static String selectSetUpStatement = "SELECT * FROM NNSETUPS WHERE id_setup = ?";
+	public static final String selectSetUpStatement = "SELECT * FROM NNSETUPS WHERE id_setup = ?";
 	public static final String IronMan = "C:\\Users\\Konomi\\Dropbox\\workspace";
 	public static final String SilverCenturion = "C:\\Users\\Manu\\Dropbox\\workspace";
 	public static final String rutaBase=null;
@@ -29,12 +27,30 @@ public class Read {
 	public static final String HORSE = "\\Set de Casos\\Set de Casos\\Set de Casos MARN 1.3\\HORSE\\Horse.net";
 	public static final String CURVAS = "\\Set de Casos\\Set de Casos\\Set de Casos MARN 1.3\\CURVAS\\Curvas3.txt";
 	public static final String CURVAS2 = "\\Set de Casos\\Set de Casos\\Set de Casos MARN 1.3\\CURVAS\\Curvas2.txt";
+	public static final String DB = "";
 
+	
 	public Read() {
 	};
 	
+	public static Connection getDBConnection() {
+		return getDBConnection(Read.DB);
+	}
 	
-	public static ArrayList<Case> readFromDB(Connection conn) throws Exception{
+	public static Connection getDBConnection(String file) {
+		String url = "jdbc:sqlite:" + file;
+		Connection conn = null;
+        try {
+			conn = DriverManager.getConnection(url);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        
+        return conn;
+	}
+	
+	public static ArrayList<Case> readFromDB(Connection conn, String selectCasesStatement) throws Exception{
 
 		if(conn==null) {
 			throw new Exception("No connection to DB");
@@ -75,12 +91,17 @@ public class Read {
 			ResultSet rs = query.executeQuery();
 			
 			if(rs.next()) {
-				ac.setmFactor(rs.getDouble("ga_mutfact"));
+				ac.setMutFactor(rs.getDouble("ga_mutfact"));
+				ac.setCrossover(rs.getDouble("ga_crossover"));
+				ac.setPairs(rs.getInt("ga_pairs"));
+				ac.setmCte(rs.getDouble("ga_mutcte"));
+				ac.setGenerr(rs.getDouble("ga_generr"));
 				ac.setnParam(rs.getInt("input_l_size"));
 				ac.setnHidLay(rs.getInt("hidden_layers"));
 				ac.setNeuronsHidLay(rs.getInt("hidden_l_size"));
 				ac.setnOutput(rs.getInt("output_l_size"));
 				ac.setlFactor(rs.getDouble("bp_lfact"));
+				ac.setSelectCasesStatement(rs.getString("select_statement"));
 			}
 			
 			rs.close();

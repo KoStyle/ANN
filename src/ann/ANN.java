@@ -5,6 +5,7 @@ package ann;
 
 import java.io.File;
 import java.io.IOException;
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -120,7 +121,7 @@ public class ANN {
 	private static int INDVIDUAL_PAIRS = 5;
 	private static double GENERR = -0.01;
 	private static int GENERATIONS = 400;
-	private final double CROSSOVER = 0.8;
+	private static double CROSSOVER = 0.8;
 	/**
 	 * Determines the size of the mutation. With a big constant the probability for big mutations raises.
 	 */
@@ -197,6 +198,12 @@ public class ANN {
 		this.nOutput = ac.getNoutput();
 		ANN.LEARNING_FACTOR = ac.getLFactor();
 		ANN.MOMFACTOR = ac.getMFactor();
+		ANN.CROSSOVER = ac.getCrossover();
+		ANN.MUTCTE = ac.getmCte();
+		ANN.MUTFACT=ac.getMutFactor();
+		ANN.GENERATIONS = ac.getGenerations();
+		ANN.INDVIDUAL_PAIRS= ac.getPairs();
+		
 		int nNeurons = this.nParam + (this.nHiddenLayers * this.nNeuHidLay)
 				+ this.nOutput;
 		ArrayList<NeuronConfig> ncfg = Read.readConfig(configfile,
@@ -1440,6 +1447,27 @@ public class ANN {
 		}
 
 	}
+	
+	
+	public static void DBBENCH(String dbfile, int id_setup){
+		Connection conn = Read.getDBConnection(dbfile);
+		ANNConfig ac = Read.readConfigDB(conn, id_setup);
+		ArrayList<Case> cases = null;
+		
+		try {
+			cases = Read.readFromDB(conn, ac.getSelectCasesStatement());
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return;
+		}
+		
+		ANN ann = new ANN(null, ac);
+		//TODO Something something query to write the stuff in db (how, and what? nobody knows)
+		ann.testBench(cases, null);
+		
+	}
+	
 	/**
 	 * A preset configuration to train the CANCER problem
 	 * @param subdirectory
