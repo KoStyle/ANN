@@ -119,7 +119,7 @@ public class ANN {
 
 	private static final int INDVIDUAL_PAIRS = 5;
 	private static final double GENERR = -0.01;
-	private static final int GENERATIONS = 40000;
+	private static final int GENERATIONS = 400;
 	private final static double CROSSOVER = 0.8;
 	/**
 	 * Determines the size of the mutation. With a big constant the probability for big mutations raises.

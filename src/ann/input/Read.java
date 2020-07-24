@@ -4,6 +4,9 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.*;
 
 import ann.util.NeuronConfig;
 
@@ -11,6 +14,8 @@ public class Read {
 
 	public static ArrayList<Double> max = null;
 	public static ArrayList<Double> min = null;
+	public static String selectCasesStatement = "";
+	public static String selectOutputStatement = "";
 	public static final String IronMan = "C:\\Users\\Konomi\\Dropbox\\workspace";
 	public static final String SilverCenturion = "C:\\Users\\Manu\\Dropbox\\workspace";
 	public static final String rutaBase=null;
@@ -27,6 +32,39 @@ public class Read {
 
 	public Read() {
 	};
+	
+	
+	public static ArrayList<Case> readFromDB(Connection conn) throws Exception{
+
+		if(conn==null) {
+			throw new Exception("No connection to DB");
+		}
+		
+		//We get the cases form the db using the select statement loaded when we read the config (also from db, somewhere else). 3 fields per case (instance id, concat of attributes, output)
+		PreparedStatement query= conn.prepareStatement(selectCasesStatement);
+		ResultSet rs = query.executeQuery();
+		
+		ArrayList<Case> caseSet = new ArrayList<Case>();
+		while(rs.next()) {
+			String[] values = rs.getString("values").split("@");
+			String[] expectedOutput = rs.getString("outputs").split("@");
+			Case aux = new Case(values.length, expectedOutput.length);
+			//we read all the values in the field value of the query
+			for(String value: values) {
+				aux.addData(Double.valueOf(value));
+			}
+			
+			for(String output : expectedOutput) {
+				aux.addExpected(Double.valueOf(output));
+			}
+			
+			caseSet.add(aux);
+				
+		}
+		rs.close();		
+		query.close();
+		return caseSet;
+	}
 	
 	@Deprecated
 	public static ArrayList<Case> read(String file) {
@@ -92,6 +130,7 @@ public class Read {
 
 			BufferedReader filein = new BufferedReader(new FileReader(file));
 
+			//TODO Change exceptios for a log of not added data (maybe)
 			while ((line = filein.readLine()) != null) {
 
 				Case aux = new Case(nParam, nResult);
@@ -104,6 +143,7 @@ public class Read {
 					cont++;
 				}
 
+				//We runned out of params before time
 				if (!st.hasMoreTokens()) {
 					filein.close();
 					throw new Exception("BAD CASE FILE 2");
@@ -115,6 +155,8 @@ public class Read {
 					aux.addExpected(Double.parseDouble(n));
 					cont++;
 				}
+				
+				//We runned out of resuts before time
 				if (!st.hasMoreTokens() && cont < nResult) {
 					filein.close();
 					throw new Exception("BAD CASE FILE 2 RESULT NO MATCH");
