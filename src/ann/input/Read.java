@@ -61,8 +61,8 @@ public class Read {
 
 		ArrayList<Case> caseSet = new ArrayList<Case>();
 		while (rs.next()) {
-			String[] values = rs.getString("values").split("@");
-			String[] expectedOutput = rs.getString("outputs").split("@");
+			String[] values = rs.getString("input_values").split("@");
+			String[] expectedOutput = rs.getString("output_values").split("@");
 			Case aux = new Case(values.length, expectedOutput.length);
 			//we read all the values in the field value of the query
 			for (String value : values) {
