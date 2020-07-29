@@ -29,18 +29,20 @@ import ann.util.NeuronConfig;
 
 /**
  * <p>
- * Core of the FeedForward Neural Network, it contains most of the important functionality.
+ * Core of the FeedForward Neural Network, it contains most of the important
+ * functionality.
  * <p>
- * Within this class you can find the training methods for both algorithms (GA and BP) and the
- * networks constructor as well.
+ * Within this class you can find the training methods for both algorithms (GA
+ * and BP) and the networks constructor as well.
+ * 
  * @author Manuel Konomi Pilkati
  */
 public class ANN {
 
 	/**
 	 * 
-	 * @author Manuel Konomi Pilkati
-	 * An auxiliary class to compare the fit of two chromosomes (Individual class).
+	 * @author Manuel Konomi Pilkati An auxiliary class to compare the fit of two
+	 *         chromosomes (Individual class).
 	 *
 	 */
 	public class individualComparator implements Comparator<Individual> {
@@ -58,6 +60,7 @@ public class ANN {
 		}
 
 	}
+
 	/**
 	 * Path were the data is read and written
 	 */
@@ -71,7 +74,7 @@ public class ANN {
 	 * Connections between the neurons
 	 */
 	private ArrayList<Input> conects;
-	
+
 	private int nParam; // Numero de parametros de entrada del problema (y de
 						// neuronas de entrada)
 	private int nHiddenLayers;// Numero de capas ocultas de la red
@@ -87,16 +90,16 @@ public class ANN {
 	private ArrayList<ExtInput> extInputs;
 
 	/**
-	 * The limits for the predicction. If the output neuron gives a number bigger than 'POSITIVE_PREDICCTION',
-	 * the output is turned into a one (true). If the output is smaller than 'NEGATIVE_PREDICTION' then
-	 * the output is zero (false)
+	 * The limits for the predicction. If the output neuron gives a number bigger
+	 * than 'POSITIVE_PREDICCTION', the output is turned into a one (true). If the
+	 * output is smaller than 'NEGATIVE_PREDICTION' then the output is zero (false)
 	 */
 	private final static double POSITIVE_PREDICTION = 0.6;
 	private final static double NEGATIVE_PREDICTION = 0.4;
 
 	/**
-	 * Percentage of problem cases that will be used for trainning. The remaining cases will conform 
-	 * the test set.
+	 * Percentage of problem cases that will be used for trainning. The remaining
+	 * cases will conform the test set.
 	 */
 	private final double trainingPercentage = 0.3;
 
@@ -106,8 +109,9 @@ public class ANN {
 	private static double MOMFACTOR = 0.5; //momentum factor
 	private static boolean MOMFACTORFLAG = true; //determines if the factor is used or not
 	/**
-	 * Defines the output type of the network. by default the network returns only one or zero (OUTTYPE= true).
-	 * If swithced to 'false' the network returns real numbers.
+	 * Defines the output type of the network. by default the network returns only
+	 * one or zero (OUTTYPE= true). If swithced to 'false' the network returns real
+	 * numbers.
 	 */
 	private static final boolean OUTTYPE = true;
 
@@ -124,7 +128,8 @@ public class ANN {
 	private static int GENERATIONS = 400;
 	private static double CROSSOVER = 0.8;
 	/**
-	 * Determines the size of the mutation. With a big constant the probability for big mutations raises.
+	 * Determines the size of the mutation. With a big constant the probability for
+	 * big mutations raises.
 	 */
 	private static double MUTCTE = 0.4;
 	/**
@@ -158,38 +163,53 @@ public class ANN {
 
 	/**
 	 * Main method, launches static methods with preset configurations.
+	 * 
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		String sub = "\\PENALTY TrucoNoise";
-		String aux=sub+" penf2";
-		ANN.PENFUNC=2;
-		ANN.CURVAS(aux);
-//		aux=sub+" penf3";
-//		ANN.PENFUNC=3;
-//		ANN.CURVAS(aux);
-//		aux=sub+" penf4";
-//		ANN.PENFUNC=4;
-//		ANN.CURVAS(aux);
-		
-//		ANN.CURVASNEUCONF(sub);
+
+		String dbfile;
+		int id_setup, id_result;
+
+		dbfile = args[0];
+		id_setup = Integer.parseInt(args[1]);
+		id_result = Integer.parseInt(args[2]);
+		ANN.DBBENCH(dbfile, id_setup, id_result);
+
+		//		String sub = "\\PENALTY TrucoNoise";
+		//		String aux=sub+" penf2";
+		//		ANN.PENFUNC=2;
+		//		ANN.CURVAS(aux);
+		//		
+
+		//		aux=sub+" penf3";
+		//		ANN.PENFUNC=3;
+		//		ANN.CURVAS(aux);
+		//		aux=sub+" penf4";
+		//		ANN.PENFUNC=4;
+		//		ANN.CURVAS(aux);
+
+		//		ANN.CURVASNEUCONF(sub);
 
 	}
 
 	/**
 	 * Constructor of the ANN (Artificial Neural Network)
 	 * 
-	 * It creates a non-trained neural network according to the parameters
-	 * Received. The network will receive as input as many parameters as nParam.
-	 * It will have "nLayers" layers (including the output and input layer. All
-	 * the layers except for the output layer will have "nNeuLay" neurons.
+	 * It creates a non-trained neural network according to the parameters Received.
+	 * The network will receive as input as many parameters as nParam. It will have
+	 * "nLayers" layers (including the output and input layer. All the layers except
+	 * for the output layer will have "nNeuLay" neurons.
 	 * 
-	 * The weights for all the connections will be random. The network resulting
-	 * of this method's invocation is dummy. For a reliable ANN you will have to
-	 * call "train()" method over the ANN giving a training set.
-	 * @param configfile contains the path of a file with an alternative set up for the neurons
-	 * in the network.
-	 * @param ac A class containing the basic configuration for the ANN.
+	 * The weights for all the connections will be random. The network resulting of
+	 * this method's invocation is dummy. For a reliable ANN you will have to call
+	 * "train()" method over the ANN giving a training set.
+	 * 
+	 * @param configfile
+	 *                       contains the path of a file with an alternative set up
+	 *                       for the neurons in the network.
+	 * @param ac
+	 *                       A class containing the basic configuration for the ANN.
 	 */
 	public ANN(String configfile, ANNConfig ac) {
 		super();
@@ -201,17 +221,15 @@ public class ANN {
 		ANN.MOMFACTOR = ac.getMFactor();
 		ANN.CROSSOVER = ac.getCrossover();
 		ANN.MUTCTE = ac.getmCte();
-		ANN.MUTFACT=ac.getMutFactor();
+		ANN.MUTFACT = ac.getMutFactor();
 		ANN.GENERATIONS = ac.getGenerations();
-		ANN.INDVIDUAL_PAIRS= ac.getPairs();
+		ANN.INDVIDUAL_PAIRS = ac.getPairs();
 		ANN.AGON = ac.isAgon();
 		ANN.APPON = ac.isAppon();
 		ANN.BPON = ac.isBpon();
-		
-		int nNeurons = this.nParam + (this.nHiddenLayers * this.nNeuHidLay)
-				+ this.nOutput;
-		ArrayList<NeuronConfig> ncfg = Read.readConfig(configfile,
-				ANN.LEARNING_FACTOR, nNeurons);
+
+		int nNeurons = this.nParam + (this.nHiddenLayers * this.nNeuHidLay) + this.nOutput;
+		ArrayList<NeuronConfig> ncfg = Read.readConfig(configfile, ANN.LEARNING_FACTOR, nNeurons);
 
 		this.conects = new ArrayList<Input>();
 		this.neurons = new ArrayList<Neuron>();
@@ -222,7 +240,7 @@ public class ANN {
 		for (int i = 0; i < this.nParam; i++) {
 			this.extInputs.add(new ExtInput(0));
 		}
-		
+
 		//TODO Remember the why of this
 		this.extInputs.add(new ExtInput(1));
 
@@ -269,8 +287,7 @@ public class ANN {
 				} else {
 					for (int k = 0; k < this.nNeuHidLay; k++) {
 						Neuron aux2 = null;
-						int neuIndex = this.nNeuHidLay * (i - 1) + k
-								+ this.nParam; // creating
+						int neuIndex = this.nNeuHidLay * (i - 1) + k + this.nParam; // creating
 						// connections
 						// to the next
 						// layer
@@ -282,8 +299,7 @@ public class ANN {
 					}
 				}
 
-				Input in = new Input(this.extInputs.get(this.nParam),
-						rd.nextDouble());
+				Input in = new Input(this.extInputs.get(this.nParam), rd.nextDouble());
 				n.addConection(in);
 				this.conects.add(in);
 				this.neurons.add(n);
@@ -312,8 +328,7 @@ public class ANN {
 				}
 			} else {
 				for (int k = 0; k < this.nNeuHidLay; k++) {
-					int neuIndex = this.nNeuHidLay * (this.nHiddenLayers - 1)
-							+ k + this.nParam; // creating
+					int neuIndex = this.nNeuHidLay * (this.nHiddenLayers - 1) + k + this.nParam; // creating
 					// connections
 					// to the
 					// next
@@ -326,8 +341,7 @@ public class ANN {
 				}
 			}
 
-			Input in = new Input(this.extInputs.get(this.nParam),
-					rd.nextDouble());
+			Input in = new Input(this.extInputs.get(this.nParam), rd.nextDouble());
 			n.addConection(in);
 			this.conects.add(in);
 			this.neurons.add(n);
@@ -355,17 +369,20 @@ public class ANN {
 		Individual copy = new Individual(we);
 		offspring.add(copy);
 	}
-	
+
 	/**
 	 * This method executes the BP algorithm.
-	 * @param trainCases set of training cases
-	 * @param testCases Set of test cases. This parameter is optional. If a set is given, the function will
-	 * take record of the evolution of the algorithm.
-	 * @return Returns an array with the performance of the network in every training cycle. It will return
-	 * null if no test set is provided.
+	 * 
+	 * @param trainCases
+	 *                       set of training cases
+	 * @param testCases
+	 *                       Set of test cases. This parameter is optional. If a set
+	 *                       is given, the function will take record of the
+	 *                       evolution of the algorithm.
+	 * @return Returns an array with the performance of the network in every
+	 *         training cycle. It will return null if no test set is provided.
 	 */
-	public ArrayList<TrainAndTestError> backPropagationLearning(
-			ArrayList<Case> trainCases, ArrayList<Case> testCases) {
+	public ArrayList<TrainAndTestError> backPropagationLearning(ArrayList<Case> trainCases, ArrayList<Case> testCases) {
 		double errorTrain = 200;
 		double errorTest = 200;
 		ArrayList<TrainAndTestError> evolution = new ArrayList<TrainAndTestError>();
@@ -409,8 +426,7 @@ public class ANN {
 				evolution.add(new TrainAndTestError(errorTrain, errorTest, j));
 			}
 			if (j % 1000 == 0) {
-				System.out.println("Error en ciclo " + j + "= " + errorTrain
-						+ " Estimacion= " + estimation);
+				System.out.println("Error en ciclo " + j + "= " + errorTrain + " Estimacion= " + estimation);
 			}
 		}
 		if (testCases == null) {
@@ -427,8 +443,7 @@ public class ANN {
 	}
 
 	@Deprecated
-	public ArrayList<Double> calculateDeviations(ArrayList<Case> cases,
-			ArrayList<Double> means) {
+	public ArrayList<Double> calculateDeviations(ArrayList<Case> cases, ArrayList<Double> means) {
 		ArrayList<Double> deviations = new ArrayList<Double>();
 		double att1 = 0., att2 = 0., att3 = 0.;
 		for (Case tmp : cases) {
@@ -450,8 +465,10 @@ public class ANN {
 
 	/**
 	 * Calculates the error of every neuron in the network to use it in BP
-	 * @param expectation An array list with the expected outputs. They are compared to the outputs generated
-	 * by the network.
+	 * 
+	 * @param expectation
+	 *                        An array list with the expected outputs. They are
+	 *                        compared to the outputs generated by the network.
 	 */
 	public void calculateErrorBP(ArrayList<Double> expectation) {
 		for (int i = 0; i < this.nOutput; i++) {
@@ -488,15 +505,14 @@ public class ANN {
 	 * error
 	 * 
 	 * @param a
-	 *            The set of individuals
+	 *                The set of individuals
 	 * @param cas
-	 *            The case that will be tested with the individuals
-	 * @return Maximum error, minimum error and minimum individual's index, in
-	 *         that order.
+	 *                The case that will be tested with the individuals
+	 * @return Maximum error, minimum error and minimum individual's index, in that
+	 *         order.
 	 */
 	//TODO reajustar checkfit con checkfitPlus
-	public ArrayList<Double> checkFit(ArrayList<Individual> a,
-			ArrayList<Case> casos) {
+	public ArrayList<Double> checkFit(ArrayList<Individual> a, ArrayList<Case> casos) {
 		double maxError = 0;
 		double minError = Double.MAX_VALUE;
 		double minIndex = -1;
@@ -506,8 +522,8 @@ public class ANN {
 			this.setWeights(indi.getWeights());
 
 			/*
-			 * se calcula el error acumulado por cada individuo para tener el
-			 * fit (cuanto menos error mejor)
+			 * se calcula el error acumulado por cada individuo para tener el fit (cuanto
+			 * menos error mejor)
 			 */
 			totalError = this.testPackTSS(casos);
 
@@ -515,8 +531,7 @@ public class ANN {
 			double aux = totalError;
 			if (ANN.PENALTY) {
 				double penalty = 0;
-				for (int i = this.nParam * 2; i < this.conects.size()
-						- this.nNeuHidLay - 1; i++) {
+				for (int i = this.nParam * 2; i < this.conects.size() - this.nNeuHidLay - 1; i++) {
 					double weight = this.conects.get(i).getWeight();
 					if (weight >= ANN.INIRANG) {
 						penalty += ANN.HIGHPEN;
@@ -553,19 +568,24 @@ public class ANN {
 	}
 
 	/**
-	 * Has the same functionality than 'checkFit' with the added feature of taking record of the
-	 * evolution of the GA.
-	 * @param a Chromosomes to be checked
-	 * @param casosTrain Training set used to check the fit
-	 * @param casosTest Test set used to record the evolution
-	 * @param data The record of the evolution
-	 * @param ciclo The evolution cycle.
-	 * @return Maximum error, minimum error and minimum individual's index, in
-	 *         that order.
+	 * Has the same functionality than 'checkFit' with the added feature of taking
+	 * record of the evolution of the GA.
+	 * 
+	 * @param a
+	 *                       Chromosomes to be checked
+	 * @param casosTrain
+	 *                       Training set used to check the fit
+	 * @param casosTest
+	 *                       Test set used to record the evolution
+	 * @param data
+	 *                       The record of the evolution
+	 * @param ciclo
+	 *                       The evolution cycle.
+	 * @return Maximum error, minimum error and minimum individual's index, in that
+	 *         order.
 	 */
-	public ArrayList<Double> checkFitPlus(ArrayList<Individual> a,
-			ArrayList<Case> casosTrain, ArrayList<Case> casosTest,
-			TrainAndTestError data, int ciclo) {
+	public ArrayList<Double> checkFitPlus(ArrayList<Individual> a, ArrayList<Case> casosTrain,
+			ArrayList<Case> casosTest, TrainAndTestError data, int ciclo) {
 		double maxError = 0;
 		double minError = Double.MAX_VALUE;
 		double minIndex = -1;
@@ -579,32 +599,32 @@ public class ANN {
 			this.setWeights(indi.getWeights());
 
 			/*
-			 * se calcula el error acumulado por cada individuo para tener el
-			 * fit (cuanto menos error mejor)
+			 * se calcula el error acumulado por cada individuo para tener el fit (cuanto
+			 * menos error mejor)
 			 */
-//			totalError = this.testPack(casosTrain);
+			//			totalError = this.testPack(casosTrain);
 			totalError = this.testPackTSS(casosTrain);
 
 			/* Penalizacion */
 			double aux = totalError;
 			if (ANN.PENALTY) {
 				double penalty = 0;
-				switch(ANN.PENFUNC){
+				switch (ANN.PENFUNC) {
 				case 1:
-					penalty= this.penaltyFunc(casosTrain, 20);
+					penalty = this.penaltyFunc(casosTrain, 20);
 					break;
 				case 2:
-					penalty= this.penaltyFunc2(casosTrain, 20);
+					penalty = this.penaltyFunc2(casosTrain, 20);
 					break;
 				case 3:
-					penalty= this.penaltyFunc3(casosTrain, 20);
-					aux=Math.pow(aux, -4);
+					penalty = this.penaltyFunc3(casosTrain, 20);
+					aux = Math.pow(aux, -4);
 					break;
 				case 4:
-					penalty= this.penaltyFunc4(casosTrain, 20);
+					penalty = this.penaltyFunc4(casosTrain, 20);
 					break;
-				}			
-				aux+=penalty;
+				}
+				aux += penalty;
 			}
 			indi.setFit(aux);
 
@@ -622,8 +642,8 @@ public class ANN {
 		}
 
 		/*
-		 * Extra lines are for the calculation of the best individual and to
-		 * record its results in test cases
+		 * Extra lines are for the calculation of the best individual and to record its
+		 * results in test cases
 		 */
 
 		Individual indi1 = a.get((int) minIndex);
@@ -657,15 +677,15 @@ public class ANN {
 		 */
 		/*
 		 * try { FileWriter fw = new FileWriter(output); BufferedWriter bw = new
-		 * BufferedWriter(fw); for (int i = 0; i < cases.size(); i++) { Case tmp
-		 * = cases.get(i); this.setInputs(tmp.getInputsBP()); Double predict =
+		 * BufferedWriter(fw); for (int i = 0; i < cases.size(); i++) { Case tmp =
+		 * cases.get(i); this.setInputs(tmp.getInputsBP()); Double predict =
 		 * this.prediction(ANN.OUTTYPE); Double error = Math.abs(predict -
 		 * tmp.getExpected());
 		 * 
-		 * System.out.println("Predicted: " + predict.toString() +
-		 * " Real depth: " + Double.toString(tmp.getExpected()) + " || ERROR: "
-		 * + error.toString()); bw.write(predict.toString() + ";" +
-		 * Double.toString(tmp.getExpected()) + "\n");
+		 * System.out.println("Predicted: " + predict.toString() + " Real depth: " +
+		 * Double.toString(tmp.getExpected()) + " || ERROR: " + error.toString());
+		 * bw.write(predict.toString() + ";" + Double.toString(tmp.getExpected()) +
+		 * "\n");
 		 * 
 		 * }
 		 * 
@@ -679,13 +699,16 @@ public class ANN {
 	 * This method is responsible of generating the optimal weights for the ANN
 	 * given a set of cases to test the results
 	 * 
-	 * @param maxGen Maximum number of generations for the algorithm
-	 * @param maxIndividualPairs Number of chromosomes/2
-	 * @param trainingSet The set used to evolve the chromosomes
+	 * @param maxGen
+	 *                               Maximum number of generations for the algorithm
+	 * @param maxIndividualPairs
+	 *                               Number of chromosomes/2
+	 * @param trainingSet
+	 *                               The set used to evolve the chromosomes
 	 * @return The set of weights to be used by the network
 	 */
-	public ArrayList<Double> geneticTraining(ArrayList<Case> trainingSet,
-			ArrayList<Case> testSet, ArrayList<TrainAndTestError> evolution) {
+	public ArrayList<Double> geneticTraining(ArrayList<Case> trainingSet, ArrayList<Case> testSet,
+			ArrayList<TrainAndTestError> evolution) {
 		int ind = ANN.INDVIDUAL_PAIRS * 2;
 		if (testSet != null) {
 			if (evolution == null) {
@@ -719,17 +742,16 @@ public class ANN {
 			res = this.checkFit(population, trainingSet);
 		} else {
 			TrainAndTestError auxiliar = new TrainAndTestError(-1, -1, -1);
-			res = this.checkFitPlus(population, trainingSet, testSet, auxiliar,
-					0);
+			res = this.checkFitPlus(population, trainingSet, testSet, auxiliar, 0);
 			evolution.add(auxiliar);
 		}
 
 		maxError = res.get(0);
 		minError = res.get(1);
-		
-//		if(!ANN.PENALTY){
-			this.setProperFit(population, minError, maxError);
-//		}
+
+		//		if(!ANN.PENALTY){
+		this.setProperFit(population, minError, maxError);
+		//		}
 		for (int count = 0; count < ANN.GENERATIONS; count++) {
 
 			if (count % 10 == 0) {
@@ -793,15 +815,14 @@ public class ANN {
 				res = this.checkFit(population, trainingSet);
 			} else {
 				TrainAndTestError auxiliar = new TrainAndTestError(-1, -1, -1);
-				res = this.checkFitPlus(population, trainingSet, testSet,
-						auxiliar, count + 1);
+				res = this.checkFitPlus(population, trainingSet, testSet, auxiliar, count + 1);
 				evolution.add(auxiliar);
 			}
 			maxError = res.get(0);
 			minError = res.get(1);
 			minIndex = (int) Math.floor(res.get(2));
-			
-				this.setProperFit(population, minError, maxError);
+
+			this.setProperFit(population, minError, maxError);
 
 			//Exit condition fulfilled, we set count to max to exit loop
 			if (minError < ANN.GENERR) {
@@ -842,8 +863,7 @@ public class ANN {
 	}
 
 	/**
-	 * This methods returns an output according to the weights and inputs of the
-	 * ANN
+	 * This methods returns an output according to the weights and inputs of the ANN
 	 * 
 	 * @return the prediction
 	 */
@@ -872,9 +892,14 @@ public class ANN {
 	}
 
 	/**
-	 * This method activates or deactivates a neuron by enabling it to generate an output
-	 * @param id The neuron identifier
-	 * @param active The activation value for said neuron. True to switch on, false to switch off
+	 * This method activates or deactivates a neuron by enabling it to generate an
+	 * output
+	 * 
+	 * @param id
+	 *                   The neuron identifier
+	 * @param active
+	 *                   The activation value for said neuron. True to switch on,
+	 *                   false to switch off
 	 */
 	public void setActiveNeuron(int id, boolean active) {
 		this.neurons.get(id).setActivated(active);
@@ -905,15 +930,13 @@ public class ANN {
 	 * @param desviations
 	 */
 	@Deprecated
-	public void setInputs(ArrayList<Double> inputs, ArrayList<Double> means,
-			ArrayList<Double> desviations) {
+	public void setInputs(ArrayList<Double> inputs, ArrayList<Double> means, ArrayList<Double> desviations) {
 
 		if (inputs.size() != this.nParam) {
 			return;
 		} else {
 			for (int i = 0; i < this.nParam; i++) {
-				double normalizedInput = (inputs.get(i) - means.get(i))
-						/ desviations.get(i);
+				double normalizedInput = (inputs.get(i) - means.get(i)) / desviations.get(i);
 				this.extInputs.get(i).setValue(normalizedInput);
 			}
 		}
@@ -921,15 +944,17 @@ public class ANN {
 	}
 
 	/**
-	 * Normalises the fit of the chromosomes in the range [0-1] to make easer to see which chromosome
-	 * is better
+	 * Normalises the fit of the chromosomes in the range [0-1] to make easer to see
+	 * which chromosome is better
 	 * 
-	 * @param ind The chromosomes
-	 * @param minError The minimum fit in the population
-	 * @param maxError The maximum fit in the population
+	 * @param ind
+	 *                     The chromosomes
+	 * @param minError
+	 *                     The minimum fit in the population
+	 * @param maxError
+	 *                     The maximum fit in the population
 	 */
-	private void setProperFit(ArrayList<Individual> ind, double minError,
-			double maxError) {
+	private void setProperFit(ArrayList<Individual> ind, double minError, double maxError) {
 		for (Individual tmp : ind) {
 			tmp.setFit(((tmp.getFit() - minError) / (maxError - minError)));
 		}
@@ -955,9 +980,13 @@ public class ANN {
 	}
 
 	/**
-	 * This method measures the classification accuracy of the network with its actual set of weights.
-	 * @param cases The set of cases to be used in classification
-	 * @return It returns a double that represents the classification success percenetage
+	 * This method measures the classification accuracy of the network with its
+	 * actual set of weights.
+	 * 
+	 * @param cases
+	 *                  The set of cases to be used in classification
+	 * @return It returns a double that represents the classification success
+	 *         percenetage
 	 */
 	public double testPack(ArrayList<Case> cases) {
 		double totalError = 0;
@@ -973,10 +1002,13 @@ public class ANN {
 	}
 
 	/**
-	 * This method calculates the acumulated error between the expected output and the generated output
-	 * in real output mode. This means that the output of the network is in the range [0-1] and not binary.
-	 * This is the method used to calculate the initial fit for the chromosomes.
-	 * @param cases The set of cases used to measure the error
+	 * This method calculates the acumulated error between the expected output and
+	 * the generated output in real output mode. This means that the output of the
+	 * network is in the range [0-1] and not binary. This is the method used to
+	 * calculate the initial fit for the chromosomes.
+	 * 
+	 * @param cases
+	 *                  The set of cases used to measure the error
 	 * @return The normalised classification success is returned.
 	 */
 	public double testPackTSS(ArrayList<Case> cases) {
@@ -989,19 +1021,25 @@ public class ANN {
 				tss += Math.pow(predict.get(j) - tmp.getExpected().get(j), 2);
 			}
 		}
-		double divisor= cases.size()*this.nOutput;
-		/*% de acierto*/
-		return 1- (tss/divisor);
+		double divisor = cases.size() * this.nOutput;
+		/* % de acierto */
+		return 1 - (tss / divisor);
 	}
+
 	/**
 	 * This method calibrates the network by calling upon the BP algorithm
-	 * @param cases The full set of cases available for the learning process. They will be divided into 
-	 * test and traning cases.
-	 * @param evolution A flag that enables and disables the record of the algorithm's evolution.
-	 * @return If 'evolution' is true, returns an array with the record of the evolution.
+	 * 
+	 * @param cases
+	 *                      The full set of cases available for the learning
+	 *                      process. They will be divided into test and traning
+	 *                      cases.
+	 * @param evolution
+	 *                      A flag that enables and disables the record of the
+	 *                      algorithm's evolution.
+	 * @return If 'evolution' is true, returns an array with the record of the
+	 *         evolution.
 	 */
-	public ArrayList<TrainAndTestError> trainNetworkBP(ArrayList<Case> cases,
-			boolean evolution) {
+	public ArrayList<TrainAndTestError> trainNetworkBP(ArrayList<Case> cases, boolean evolution) {
 		/*
 		 * Reading the cases from the file and parsing them
 		 */
@@ -1022,23 +1060,22 @@ public class ANN {
 	}
 
 	/**
-	 * This method trains a network given a file with training cases, the number
-	 * of pairs of individuals, the max generations that will be created and a
-	 * boolean to decide which kind of training will be done.
+	 * This method trains a network given a file with training cases, the number of
+	 * pairs of individuals, the max generations that will be created and a boolean
+	 * to decide which kind of training will be done.
 	 * 
 	 * @param file
-	 *            String with the path of the file with the cases
+	 *                     String with the path of the file with the cases
 	 * @param pairs
-	 *            Pairs of individuals in each generation
+	 *                     Pairs of individuals in each generation
 	 * @param gens
-	 *            Max generations
+	 *                     Max generations
 	 * @param evoGraph
-	 *            If true, the method will record the necesary information to
-	 *            generate an Evolution or Error graphic
+	 *                     If true, the method will record the necesary information
+	 *                     to generate an Evolution or Error graphic
 	 * @return
 	 */
-	public ArrayList<TrainAndTestError> trainNetworkAG(ArrayList<Case> cases,
-			boolean evoGraph) {
+	public ArrayList<TrainAndTestError> trainNetworkAG(ArrayList<Case> cases, boolean evoGraph) {
 		ArrayList<Case> trainCases = new ArrayList<Case>();
 		ArrayList<Case> testCases = new ArrayList<Case>();
 		ArrayList<TrainAndTestError> evolution = null;
@@ -1051,16 +1088,14 @@ public class ANN {
 
 		if (evoGraph) {
 			evolution = new ArrayList<TrainAndTestError>();
-			this.setWeights(this.geneticTraining(trainCases, testCases,
-					evolution));
+			this.setWeights(this.geneticTraining(trainCases, testCases, evolution));
 
 		} else {
 
 			this.setWeights(this.geneticTraining(trainCases, null, null));
 		}
 
-		System.out.println("Acurancy:"
-				+ String.valueOf(this.testPack(testCases)));
+		System.out.println("Acurancy:" + String.valueOf(this.testPack(testCases)));
 		return evolution;
 	}
 
@@ -1069,11 +1104,14 @@ public class ANN {
 			n.recalculateWeights();
 		}
 	}
-	
+
 	/**
-	 * This method saves all the configuration used in the training to be written in a file later.
-	 * @param cfg The object 'ConfigurationTestResults' that stores all the information concerning multiple 
-	 * trainings.
+	 * This method saves all the configuration used in the training to be written in
+	 * a file later.
+	 * 
+	 * @param cfg
+	 *                The object 'ConfigurationTestResults' that stores all the
+	 *                information concerning multiple trainings.
 	 */
 	public void setCfg(ConfigurationTestResults cfg) {
 		cfg.setCROSSOVER(CROSSOVER);
@@ -1102,13 +1140,18 @@ public class ANN {
 		cfg.setnNeuHidden(this.nNeuHidLay);
 		cfg.setOut(nOutput);
 	}
+
 	/**
-	 * This method stores the results of a single training with one of the algorithms to print it later.
-	 * It stores the success rate, the success rate with one neuron of and two neurons of and, if required,
-	 * the results of the network when noise is added.
-	 * @param set Case set to test the network
-	 * @param iteration The identifier of the training. There can be multiple trainings stored in a
-	 * 'ConfigurationTestResult'
+	 * This method stores the results of a single training with one of the
+	 * algorithms to print it later. It stores the success rate, the success rate
+	 * with one neuron of and two neurons of and, if required, the results of the
+	 * network when noise is added.
+	 * 
+	 * @param set
+	 *                      Case set to test the network
+	 * @param iteration
+	 *                      The identifier of the training. There can be multiple
+	 *                      trainings stored in a 'ConfigurationTestResult'
 	 * @return Returns an ExecutionResult object that stores all this data.
 	 */
 	public ExecutionResult testCaseSet(ArrayList<Case> set, int iteration) {
@@ -1126,8 +1169,8 @@ public class ANN {
 			// TODO numeros magicos
 			for (double i = 0.001; i <= 0.041; i += 0.001) {
 				noisedSet = new ArrayList<Case>();
-				for (int j=1; j<set.size(); j++) {
-					Case aux=set.get(j);
+				for (int j = 1; j < set.size(); j++) {
+					Case aux = set.get(j);
 					noisedSet.add(Case.noiseFilter(aux, i));
 				}
 				nr = new NoiseResult();
@@ -1141,8 +1184,10 @@ public class ANN {
 		return er;
 
 	}
+
 	/**
 	 * This method tests the network with only the first neuron on.
+	 * 
 	 * @param er
 	 * @param set
 	 */
@@ -1167,9 +1212,11 @@ public class ANN {
 		}
 
 	}
-	
+
 	/**
-	 * This method tests the network with all the possible combinations of two hidden neurons offline.
+	 * This method tests the network with all the possible combinations of two
+	 * hidden neurons offline.
+	 * 
 	 * @param er
 	 * @param set
 	 */
@@ -1193,7 +1240,9 @@ public class ANN {
 	}
 
 	/**
-	 * This method tests the network while shutting down one neuron at a time (only input and hidden neurons)
+	 * This method tests the network while shutting down one neuron at a time (only
+	 * input and hidden neurons)
+	 * 
 	 * @param er
 	 * @param set
 	 */
@@ -1205,7 +1254,7 @@ public class ANN {
 			this.setActiveNeuron(x, false);
 
 			double ret = this.testPack(set);
-//			double auxaux= this.testPack(set);
+			//			double auxaux= this.testPack(set);
 			nv.setResult(ret);
 			nv.setDownValue(this.neurons.get(x).downValue());
 			nv.setUpValue(this.neurons.get(x).upValue());
@@ -1214,9 +1263,9 @@ public class ANN {
 			this.setActiveNeuron(x, tmp);
 		}
 	}
-	
-	public double penaltyFunc(ArrayList<Case> set, int lastNeuron){
-		ArrayList<NeuronValues> neuronVal= new ArrayList<NeuronValues>();
+
+	public double penaltyFunc(ArrayList<Case> set, int lastNeuron) {
+		ArrayList<NeuronValues> neuronVal = new ArrayList<NeuronValues>();
 		for (int x = 0; x < lastNeuron; x++) {
 			NeuronValues nv = new NeuronValues();
 			nv.setNeuronID(x);
@@ -1227,15 +1276,15 @@ public class ANN {
 			neuronVal.add(nv);
 			this.setActiveNeuron(x, tmp);
 		}
-		double acumulator=0;
-		for(NeuronValues aux: neuronVal){
-			acumulator+= aux.getResult();
+		double acumulator = 0;
+		for (NeuronValues aux : neuronVal) {
+			acumulator += aux.getResult();
 		}
 		return acumulator;
 	}
-	
-	public double penaltyFunc2(ArrayList<Case> set, int lastNeuron){
-		ArrayList<NeuronValues> neuronVal= new ArrayList<NeuronValues>();
+
+	public double penaltyFunc2(ArrayList<Case> set, int lastNeuron) {
+		ArrayList<NeuronValues> neuronVal = new ArrayList<NeuronValues>();
 		for (int x = 0; x < lastNeuron; x++) {
 			NeuronValues nv = new NeuronValues();
 			nv.setNeuronID(x);
@@ -1246,15 +1295,15 @@ public class ANN {
 			neuronVal.add(nv);
 			this.setActiveNeuron(x, tmp);
 		}
-		double acumulator=0;
-		for(NeuronValues aux: neuronVal){
-			acumulator+= aux.getResult();
+		double acumulator = 0;
+		for (NeuronValues aux : neuronVal) {
+			acumulator += aux.getResult();
 		}
-		return acumulator/neuronVal.size();
+		return acumulator / neuronVal.size();
 	}
-	
-	public double penaltyFunc3(ArrayList<Case> set, int lastNeuron){
-		ArrayList<NeuronValues> neuronVal= new ArrayList<NeuronValues>();
+
+	public double penaltyFunc3(ArrayList<Case> set, int lastNeuron) {
+		ArrayList<NeuronValues> neuronVal = new ArrayList<NeuronValues>();
 		for (int x = 0; x < lastNeuron; x++) {
 			NeuronValues nv = new NeuronValues();
 			nv.setNeuronID(x);
@@ -1265,16 +1314,16 @@ public class ANN {
 			neuronVal.add(nv);
 			this.setActiveNeuron(x, tmp);
 		}
-		double acumulator=0;
-		for(NeuronValues aux: neuronVal){
-			acumulator+= aux.getResult();
+		double acumulator = 0;
+		for (NeuronValues aux : neuronVal) {
+			acumulator += aux.getResult();
 		}
 		return acumulator;
 	}
-	
-	public double penaltyFunc4(ArrayList<Case> set, int lastNeuron){
-		ArrayList<NeuronValues> neuronVal= new ArrayList<NeuronValues>();
-		boolean flag=false;
+
+	public double penaltyFunc4(ArrayList<Case> set, int lastNeuron) {
+		ArrayList<NeuronValues> neuronVal = new ArrayList<NeuronValues>();
+		boolean flag = false;
 		for (int x = 0; x < lastNeuron; x++) {
 			NeuronValues nv = new NeuronValues();
 			nv.setNeuronID(x);
@@ -1284,17 +1333,17 @@ public class ANN {
 			nv.setResult(ret);
 			neuronVal.add(nv);
 			this.setActiveNeuron(x, tmp);
-			if(x==0 && ret<0.7){
-				flag=true;
+			if (x == 0 && ret < 0.7) {
+				flag = true;
 			}
 		}
-		double acumulator=0;
-		for(NeuronValues aux: neuronVal){
-			acumulator+= aux.getResult();
+		double acumulator = 0;
+		for (NeuronValues aux : neuronVal) {
+			acumulator += aux.getResult();
 		}
-		if(flag){
+		if (flag) {
 			return 0;
-		}else{
+		} else {
 			return acumulator;
 		}
 	}
@@ -1313,19 +1362,22 @@ public class ANN {
 
 	}
 
-
 	/**
-	 * This method is used to automate the testing with the network. According to the fields at the beginning 
-	 * of this class, the user can define the number of training with each algorithm, the algorithms to be used
-	 * and if he wants to test 'Sweep mode' after the training. Sweep mode shuts down neurons one by one to find 
-	 * the point where the system no longer works. Returns a ConfigurationTestResult object containing all the results
-	 * @param set The full set of cases for the learning process
+	 * This method is used to automate the testing with the network. According to
+	 * the fields at the beginning of this class, the user can define the number of
+	 * training with each algorithm, the algorithms to be used and if he wants to
+	 * test 'Sweep mode' after the training. Sweep mode shuts down neurons one by
+	 * one to find the point where the system no longer works. Returns a
+	 * ConfigurationTestResult object containing all the results
+	 * 
+	 * @param set
+	 *                The full set of cases for the learning process
 	 */
 	public ConfigurationTestResults testBench(ArrayList<Case> set) {
 
 		ConfigurationTestResults cfg = new ConfigurationTestResults(null);
 		this.setCfg(cfg);
-		cfg.dataset=set;
+		cfg.dataset = set;
 		int iteration = 0;
 		int maxIterations;
 		if (SWEEP) {
@@ -1333,7 +1385,7 @@ public class ANN {
 		} else {
 			maxIterations = ITERATIONS;
 		}
-		
+
 		//TODO Recycle code for the love of god
 		// BACKPROPAGATION
 		if (ANN.BPON) {
@@ -1366,7 +1418,7 @@ public class ANN {
 				if (SWEEP) {
 					this.sweep(i);
 				}
-				
+
 				cfg.addResultAPP(this.execution(APP, set, iteration));
 				iteration++;
 			}
@@ -1378,6 +1430,7 @@ public class ANN {
 
 	/**
 	 * This variant writes the result in the given rootDirectory
+	 * 
 	 * @param set
 	 * @param rootDirectory
 	 */
@@ -1385,9 +1438,9 @@ public class ANN {
 		if (rootDirectory != null && !rootDirectory.exists()) {
 			rootDirectory.mkdir();
 		}
-		
+
 		ConfigurationTestResults cfg = testBench(set);
-		
+
 		cfg.setRootFolder(rootDirectory);
 		try {
 			cfg.writeResults();
@@ -1396,7 +1449,7 @@ public class ANN {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public void randomizeWeights() {
 		MyRandom rd = new MyRandom();
 		for (Input i : this.conects) {
@@ -1405,15 +1458,20 @@ public class ANN {
 	}
 
 	/**
-	 * This function divides the case set into trainning and test set according the 'trainingPercentage'.
-	 * The order of the cases is always randomised before spliting them.
-	 * @param cases Original set
-	 * @param training set to store the training cases
-	 * @param test set to store the test cases
-	 * @throws Exception If one of the arrays doesn't exist.
+	 * This function divides the case set into trainning and test set according the
+	 * 'trainingPercentage'. The order of the cases is always randomised before
+	 * spliting them.
+	 * 
+	 * @param cases
+	 *                     Original set
+	 * @param training
+	 *                     set to store the training cases
+	 * @param test
+	 *                     set to store the test cases
+	 * @throws Exception
+	 *                       If one of the arrays doesn't exist.
 	 */
-	public void splitCases(ArrayList<Case> cases, ArrayList<Case> training,
-			ArrayList<Case> test) throws Exception {
+	public void splitCases(ArrayList<Case> cases, ArrayList<Case> training, ArrayList<Case> test) throws Exception {
 		if (training == null || test == null) {
 			throw new Exception("No existe training o test");
 		}
@@ -1430,10 +1488,12 @@ public class ANN {
 	}
 
 	/**
-	 * This method shuts down the neurons of the network one by one, making a sweep. It only affects input neurons.
-	 * While the phase is smaller than the number of input neurons, the sweep is done forward. This means
-	 * that the neurons are set offline from the first to the last. If the phase is bigger than
-	 * the number of input neurons, the sweep is done backwards, from the last to the first. 
+	 * This method shuts down the neurons of the network one by one, making a sweep.
+	 * It only affects input neurons. While the phase is smaller than the number of
+	 * input neurons, the sweep is done forward. This means that the neurons are set
+	 * offline from the first to the last. If the phase is bigger than the number of
+	 * input neurons, the sweep is done backwards, from the last to the first.
+	 * 
 	 * @param phase
 	 */
 	public void sweep(int phase) {
@@ -1465,13 +1525,12 @@ public class ANN {
 		}
 
 	}
-	
-	
-	public static void DBBENCH(String dbfile, int id_setup){
+
+	public static void DBBENCH(String dbfile, int id_setup, int id_result) {
 		Connection conn = Read.getDBConnection(dbfile);
 		ANNConfig ac = Read.readConfigDB(conn, id_setup);
 		ArrayList<Case> cases = null;
-		
+
 		try {
 			cases = Read.readFromDB(conn, ac.getSelectCasesStatement());
 		} catch (Exception e) {
@@ -1479,23 +1538,22 @@ public class ANN {
 			e.printStackTrace();
 			return;
 		}
-		
+
 		ANN ann = new ANN(null, ac);
-		//TODO Something something query to write the stuff in db (how, and what? nobody knows)
-		ConfigurationTestResults cfg = ann.testBench(cases);	
-		
-		
+		ConfigurationTestResults cfg = ann.testBench(cases);
 		try {
+			cfg.writeResultsDB(conn, id_setup, id_result);
 			conn.close();
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+
 	}
-	
+
 	/**
 	 * A preset configuration to train the CANCER problem
+	 * 
 	 * @param subdirectory
 	 */
 	public static void CANCER(String subdirectory) {
@@ -1508,16 +1566,17 @@ public class ANN {
 		ac.setNeuronsHidLay(8);
 		ac.setnOutput(1);
 
-		ArrayList<Case> cases = Read.read2(path + Read.CANCER, ac.getParam(),
-				ac.getNoutput());
+		ArrayList<Case> cases = Read.read2(path + Read.CANCER, ac.getParam(), ac.getNoutput());
 		ANN ann = new ANN(null, ac);
 		File root = new File(path + subdirectory + "\\CANCER");
 		ann.testBench(cases, root);
 	}
-	 /**
-	  * A second preset configuration for the problem
-	  * @param subdirectory
-	  */
+
+	/**
+	 * A second preset configuration for the problem
+	 * 
+	 * @param subdirectory
+	 */
 	public static void CANCER2(String subdirectory) {
 		ANNConfig ac = new ANNConfig();
 
@@ -1528,14 +1587,15 @@ public class ANN {
 		ac.setNeuronsHidLay(8);
 		ac.setnOutput(2);
 
-		ArrayList<Case> cases = Read.read2(path + Read.CANCER2, ac.getParam(),
-				ac.getNoutput());
+		ArrayList<Case> cases = Read.read2(path + Read.CANCER2, ac.getParam(), ac.getNoutput());
 		ANN ann = new ANN(null, ac);
 		File root = new File(path + subdirectory + "\\CANCER2");
 		ann.testBench(cases, root);
 	}
+
 	/**
 	 * A preset configuration to train the CARD problem
+	 * 
 	 * @param subdirectory
 	 */
 	public static void CARD(String subdirectory) {
@@ -1548,14 +1608,15 @@ public class ANN {
 		ac.setNeuronsHidLay(6);
 		ac.setnOutput(1);
 
-		ArrayList<Case> cases = Read.read2(path + Read.CARD, ac.getParam(),
-				ac.getNoutput());
+		ArrayList<Case> cases = Read.read2(path + Read.CARD, ac.getParam(), ac.getNoutput());
 		ANN ann = new ANN(null, ac);
 		File root = new File(path + subdirectory + "\\CARD");
 		ann.testBench(cases, root);
 	}
+
 	/**
 	 * A preset configuration to train the HEART problem
+	 * 
 	 * @param subdirectory
 	 */
 	public static void HEART(String subdirectory) {
@@ -1568,14 +1629,15 @@ public class ANN {
 		ac.setNeuronsHidLay(8);
 		ac.setnOutput(2);
 
-		ArrayList<Case> cases = Read.read2(path + Read.HEART, ac.getParam(),
-				ac.getNoutput());
+		ArrayList<Case> cases = Read.read2(path + Read.HEART, ac.getParam(), ac.getNoutput());
 		ANN ann = new ANN(null, ac);
 		File root = new File(path + subdirectory + "\\HEART");
 		ann.testBench(cases, root);
 	}
+
 	/**
 	 * A preset configuration to train the PIMA problem
+	 * 
 	 * @param subdirectory
 	 */
 	public static void PIMA(String subdirectory) {
@@ -1588,14 +1650,15 @@ public class ANN {
 		ac.setNeuronsHidLay(6);
 		ac.setnOutput(1);
 
-		ArrayList<Case> cases = Read.read2(path + Read.PIMA, ac.getParam(),
-				ac.getNoutput());
+		ArrayList<Case> cases = Read.read2(path + Read.PIMA, ac.getParam(), ac.getNoutput());
 		ANN ann = new ANN(null, ac);
 		File root = new File(path + subdirectory + "\\PIMA");
 		ann.testBench(cases, root);
 	}
+
 	/**
 	 * A preset configuration to train the SONAR problem
+	 * 
 	 * @param subdirectory
 	 */
 	public static void SONAR(String subdirectory) {
@@ -1608,14 +1671,15 @@ public class ANN {
 		ac.setNeuronsHidLay(12);
 		ac.setnOutput(1);
 
-		ArrayList<Case> cases = Read.read2(path + Read.SONAR, ac.getParam(),
-				ac.getNoutput());
+		ArrayList<Case> cases = Read.read2(path + Read.SONAR, ac.getParam(), ac.getNoutput());
 		ANN ann = new ANN(null, ac);
 		File root = new File(path + subdirectory + "\\SONAR");
 		ann.testBench(cases, root);
 	}
+
 	/**
 	 * A preset configuration to train the GLASS problem
+	 * 
 	 * @param subdirectory
 	 */
 	public static void GLASS(String subdirectory) {
@@ -1628,14 +1692,15 @@ public class ANN {
 		ac.setNeuronsHidLay(12);
 		ac.setnOutput(6);
 
-		ArrayList<Case> cases = Read.read2(path + Read.GLASS, ac.getParam(),
-				ac.getNoutput());
+		ArrayList<Case> cases = Read.read2(path + Read.GLASS, ac.getParam(), ac.getNoutput());
 		ANN ann = new ANN(null, ac);
 		File root = new File(path + subdirectory + "\\GLASS");
 		ann.testBench(cases, root);
 	}
+
 	/**
 	 * A preset configuration to train the HORSE problem
+	 * 
 	 * @param subdirectory
 	 */
 	public static void HORSE(String subdirectory) {
@@ -1648,14 +1713,15 @@ public class ANN {
 		ac.setNeuronsHidLay(12);
 		ac.setnOutput(3);
 
-		ArrayList<Case> cases = Read.read2(path + Read.HORSE, ac.getParam(),
-				ac.getNoutput());
+		ArrayList<Case> cases = Read.read2(path + Read.HORSE, ac.getParam(), ac.getNoutput());
 		ANN ann = new ANN(null, ac);
 		File root = new File(path + subdirectory + "\\HORSE");
 		ann.testBench(cases, root);
 	}
+
 	/**
 	 * A preset configuration to train the SEM force curves
+	 * 
 	 * @param subdirectory
 	 */
 	public static void CURVAS(String subdirectory) {
@@ -1668,14 +1734,16 @@ public class ANN {
 		ac.setNeuronsHidLay(8);
 		ac.setnOutput(2);
 
-		ArrayList<Case> cases = Read.read2(path + Read.CURVAS, ac.getParam(),
-				ac.getNoutput());
+		ArrayList<Case> cases = Read.read2(path + Read.CURVAS, ac.getParam(), ac.getNoutput());
 		ANN ann = new ANN(null, ac);
 		File root = new File(path + subdirectory + "\\CURVAS");
 		ann.testBench(cases, root);
 	}
+
 	/**
-	 * A preset configuration to train the SEM force curves with special neuron configuration
+	 * A preset configuration to train the SEM force curves with special neuron
+	 * configuration
+	 * 
 	 * @param subdirectory
 	 */
 	public static void CURVASNEUCONF(String subdirectory) {
@@ -1688,22 +1756,25 @@ public class ANN {
 		ac.setNeuronsHidLay(8);
 		ac.setnOutput(2);
 
-		ArrayList<Case> cases = Read.read2(path + Read.CURVAS, ac.getParam(),
-				ac.getNoutput());
+		ArrayList<Case> cases = Read.read2(path + Read.CURVAS, ac.getParam(), ac.getNoutput());
 		ANN ann = new ANN(path + "\\RED.txt", ac);
 		File root = new File(path + subdirectory + "\\CURVASNEUCONF");
 		ann.testBench(cases, root);
 	}
+
 	/**
-	 * This method does a single training of the network with a specified algorithm and stores it in
-	 * a 'ExecutionResult' object.
-	 * @param type The algorithm used
-	 * @param set The full case set
-	 * @param iteration the training identifier.
+	 * This method does a single training of the network with a specified algorithm
+	 * and stores it in a 'ExecutionResult' object.
+	 * 
+	 * @param type
+	 *                      The algorithm used
+	 * @param set
+	 *                      The full case set
+	 * @param iteration
+	 *                      the training identifier.
 	 * @return
 	 */
-	public ExecutionResult execution(int type, ArrayList<Case> set,
-			int iteration) {
+	public ExecutionResult execution(int type, ArrayList<Case> set, int iteration) {
 		ExecutionResult er;
 		ArrayList<TrainAndTestError> tmp = null;
 		this.randomizeWeights();
@@ -1713,12 +1784,12 @@ public class ANN {
 			tmp = this.trainNetworkAG(set, ANN.EVOLUTIONGRAPH);
 			break;
 		case ANN.BP:
-			tmp= this.trainNetworkBP(set, ANN.EVOLUTIONGRAPH);
+			tmp = this.trainNetworkBP(set, ANN.EVOLUTIONGRAPH);
 			break;
 		case ANN.APP:
-			ANN.PENALTY=true;
-			tmp= this.trainNetworkAG(set, EVOLUTIONGRAPH);
-			ANN.PENALTY=false;
+			ANN.PENALTY = true;
+			tmp = this.trainNetworkAG(set, EVOLUTIONGRAPH);
+			ANN.PENALTY = false;
 			break;
 		}
 		er = this.testCaseSet(set, iteration);
