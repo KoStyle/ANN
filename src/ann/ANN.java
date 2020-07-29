@@ -6,6 +6,7 @@ package ann;
 import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -134,9 +135,9 @@ public class ANN {
 	// TEST BENCH
 	private static int ITERATIONS = 1;
 
-	private static final boolean BPON = false;
-	private static final boolean AGON = false;
-	private static final boolean APPON = true;
+	private static boolean BPON = false;
+	private static boolean AGON = false;
+	private static boolean APPON = true;
 
 	private static final boolean EVOLUTIONGRAPH = true;
 
@@ -203,6 +204,9 @@ public class ANN {
 		ANN.MUTFACT=ac.getMutFactor();
 		ANN.GENERATIONS = ac.getGenerations();
 		ANN.INDVIDUAL_PAIRS= ac.getPairs();
+		ANN.AGON = ac.isAgon();
+		ANN.APPON = ac.isAppon();
+		ANN.BPON = ac.isBpon();
 		
 		int nNeurons = this.nParam + (this.nHiddenLayers * this.nNeuHidLay)
 				+ this.nOutput;
@@ -799,6 +803,7 @@ public class ANN {
 			
 				this.setProperFit(population, minError, maxError);
 
+			//Exit condition fulfilled, we set count to max to exit loop
 			if (minError < ANN.GENERR) {
 				count = ANN.GENERATIONS;
 			}
@@ -1308,24 +1313,19 @@ public class ANN {
 
 	}
 
-	/*
-	 * Se supone que rootDirectory existe
-	 */
+
 	/**
-	 * This method is used to automatise the testing with the network. According to the fields at the begining 
-	 * of this class, the user can define the number of trainings with each algorithm, the algorithms to be used
+	 * This method is used to automate the testing with the network. According to the fields at the beginning 
+	 * of this class, the user can define the number of training with each algorithm, the algorithms to be used
 	 * and if he wants to test 'Sweep mode' after the training. Sweep mode shuts down neurons one by one to find 
-	 * the point where the system no longer works.
+	 * the point where the system no longer works. Returns a ConfigurationTestResult object containing all the results
 	 * @param set The full set of cases for the learning process
-	 * @param rootDirectory The root directory where the results will be stored. It has to exist.
 	 */
-	public void testBench(ArrayList<Case> set, File rootDirectory) {
-		if (rootDirectory != null && !rootDirectory.exists()) {
-			rootDirectory.mkdir();
-		}
-		ConfigurationTestResults cfg = new ConfigurationTestResults(
-				rootDirectory);
+	public ConfigurationTestResults testBench(ArrayList<Case> set) {
+
+		ConfigurationTestResults cfg = new ConfigurationTestResults(null);
 		this.setCfg(cfg);
+		cfg.dataset=set;
 		int iteration = 0;
 		int maxIterations;
 		if (SWEEP) {
@@ -1372,15 +1372,31 @@ public class ANN {
 			}
 		}
 
-		try {
-			cfg.writeResults();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return;
+		return cfg;
 
 	}
 
+	/**
+	 * This variant writes the result in the given rootDirectory
+	 * @param set
+	 * @param rootDirectory
+	 */
+	public void testBench(ArrayList<Case> set, File rootDirectory) {
+		if (rootDirectory != null && !rootDirectory.exists()) {
+			rootDirectory.mkdir();
+		}
+		
+		ConfigurationTestResults cfg = testBench(set);
+		
+		cfg.setRootFolder(rootDirectory);
+		try {
+			cfg.writeResults();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
 	public void randomizeWeights() {
 		MyRandom rd = new MyRandom();
 		for (Input i : this.conects) {
@@ -1466,7 +1482,15 @@ public class ANN {
 		
 		ANN ann = new ANN(null, ac);
 		//TODO Something something query to write the stuff in db (how, and what? nobody knows)
-		ann.testBench(cases, null);
+		ConfigurationTestResults cfg = ann.testBench(cases);	
+		
+		
+		try {
+			conn.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 	}
 	

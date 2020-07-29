@@ -16,7 +16,7 @@ public class Read {
 	public static final String selectSetUpStatement = "SELECT * FROM NNSETUPS WHERE id_setup = ?";
 	public static final String IronMan = "C:\\Users\\Konomi\\Dropbox\\workspace";
 	public static final String SilverCenturion = "C:\\Users\\Manu\\Dropbox\\workspace";
-	public static final String rutaBase=null;
+	public static final String rutaBase = null;
 	public static final String CANCER = "\\Set de Casos\\Set de Casos\\Set de Casos MARN 1.3\\CANCER\\Cancer.net";
 	public static final String CANCER2 = "\\Set de Casos\\Set de Casos\\Set de Casos MARN 1.3\\CANCER2\\Cancer.net";
 	public static final String PIMA = "\\Set de Casos\\Set de Casos\\Set de Casos MARN 1.3\\PIMA\\Pima.net";
@@ -29,93 +29,109 @@ public class Read {
 	public static final String CURVAS2 = "\\Set de Casos\\Set de Casos\\Set de Casos MARN 1.3\\CURVAS\\Curvas2.txt";
 	public static final String DB = "";
 
-	
 	public Read() {
 	};
-	
+
 	public static Connection getDBConnection() {
 		return getDBConnection(Read.DB);
 	}
-	
+
 	public static Connection getDBConnection(String file) {
 		String url = "jdbc:sqlite:" + file;
 		Connection conn = null;
-        try {
+		try {
 			conn = DriverManager.getConnection(url);
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-        
-        return conn;
-	}
-	
-	public static ArrayList<Case> readFromDB(Connection conn, String selectCasesStatement) throws Exception{
 
-		if(conn==null) {
+		return conn;
+	}
+
+	public static ArrayList<Case> readFromDB(Connection conn, String selectCasesStatement) throws Exception {
+
+		if (conn == null) {
 			throw new Exception("No connection to DB");
 		}
-		
+
 		//We get the cases form the db using the select statement loaded when we read the config (also from db, somewhere else). 3 fields per case (instance id, concat of attributes, output)
-		PreparedStatement query= conn.prepareStatement(selectCasesStatement);
+		PreparedStatement query = conn.prepareStatement(selectCasesStatement);
 		ResultSet rs = query.executeQuery();
-		
+
 		ArrayList<Case> caseSet = new ArrayList<Case>();
-		while(rs.next()) {
+		while (rs.next()) {
 			String[] values = rs.getString("values").split("@");
 			String[] expectedOutput = rs.getString("outputs").split("@");
 			Case aux = new Case(values.length, expectedOutput.length);
 			//we read all the values in the field value of the query
-			for(String value: values) {
+			for (String value : values) {
 				aux.addData(Double.valueOf(value));
 			}
-			
-			for(String output : expectedOutput) {
+
+			for (String output : expectedOutput) {
 				aux.addExpected(Double.valueOf(output));
 			}
-			
+
 			caseSet.add(aux);
-				
+
 		}
-		rs.close();		
+		rs.close();
 		query.close();
 		return caseSet;
 	}
 
 	public static ANNConfig readConfigDB(Connection conn, int id_setup) {
-		
+
 		try {
-			ANNConfig ac= new ANNConfig();
+			ANNConfig ac = new ANNConfig();
 			PreparedStatement query = conn.prepareStatement(selectSetUpStatement);
 			query.setInt(1, id_setup); //I hate hate hate that the first index is 1
 			ResultSet rs = query.executeQuery();
-			
-			if(rs.next()) {
+
+			if (rs.next()) {
 				ac.setMutFactor(rs.getDouble("ga_mutfact"));
 				ac.setCrossover(rs.getDouble("ga_crossover"));
 				ac.setPairs(rs.getInt("ga_pairs"));
 				ac.setmCte(rs.getDouble("ga_mutcte"));
 				ac.setGenerr(rs.getDouble("ga_generr"));
+				ac.setGenerations(rs.getInt("ga_generations"));
 				ac.setnParam(rs.getInt("input_l_size"));
 				ac.setnHidLay(rs.getInt("hidden_layers"));
 				ac.setNeuronsHidLay(rs.getInt("hidden_l_size"));
 				ac.setnOutput(rs.getInt("output_l_size"));
 				ac.setlFactor(rs.getDouble("bp_lfact"));
 				ac.setSelectCasesStatement(rs.getString("select_statement"));
+
+				//Reading the methods to be used. They are stored in a semicolon-separated string
+				String[] methodTokens = rs.getString("method").split(";");
+				for (String method : methodTokens) {
+					switch (method) {
+						case "AG":
+							ac.setAgon(true);
+							break;
+						case "BP":
+							ac.setBpon(true);
+							break;
+						case "APP":
+							ac.setAppon(true);
+							break;
+					}
+				}
 			}
-			
+
 			rs.close();
 			query.close();
 			return ac;
-			
+
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} 
-		
+		}
+
 		return null;
 	}
-	
+
 	@Deprecated
 	public static ArrayList<Case> read(String file) {
 
@@ -130,7 +146,7 @@ public class Read {
 
 			while ((line = filein.readLine()) != null) {
 
-				Case aux = new Case(3,6);
+				Case aux = new Case(3, 6);
 				StringTokenizer st = new StringTokenizer(line);
 
 				cont = 1;
@@ -139,23 +155,20 @@ public class Read {
 					switch (cont) {
 					case 3:
 						lines = n.split("e");
-						aux.addData(Double.parseDouble(lines[0])
-								* Math.pow(10, Double.parseDouble(lines[1])));
+						aux.addData(Double.parseDouble(lines[0]) * Math.pow(10, Double.parseDouble(lines[1])));
 						break;
 					case 19:
 						lines = n.split("e");
-						aux.addData(Double.parseDouble(lines[0])
-								* Math.pow(10, Double.parseDouble(lines[1])));
+						aux.addData(Double.parseDouble(lines[0]) * Math.pow(10, Double.parseDouble(lines[1])));
 						break;
 					case 20:
 						lines = n.split("e");
-						aux.addData(Double.parseDouble(lines[0])
-								* Math.pow(10, Double.parseDouble(lines[1])));
+						aux.addData(Double.parseDouble(lines[0]) * Math.pow(10, Double.parseDouble(lines[1])));
 						break;
 					case 22:
 						lines = n.split("e");
-//						aux.setExpected(Double.parseDouble(lines[0])
-//								* Math.pow(10, Double.parseDouble(lines[1])));
+						//						aux.setExpected(Double.parseDouble(lines[0])
+						//								* Math.pow(10, Double.parseDouble(lines[1])));
 						break;
 					}
 					cont++;
@@ -205,7 +218,7 @@ public class Read {
 					aux.addExpected(Double.parseDouble(n));
 					cont++;
 				}
-				
+
 				//We runned out of resuts before time
 				if (!st.hasMoreTokens() && cont < nResult) {
 					filein.close();
@@ -250,9 +263,8 @@ public class Read {
 					}
 				}
 				/*
-				 * if(aux.getExpected()>max.get(nData)){ max.set(nData,
-				 * aux.getExpected()); }else
-				 * if(aux.getExpected()<min.get(nData)){ min.set(nData,
+				 * if(aux.getExpected()>max.get(nData)){ max.set(nData, aux.getExpected());
+				 * }else if(aux.getExpected()<min.get(nData)){ min.set(nData,
 				 * aux.getExpected()); }
 				 */
 			}
@@ -269,9 +281,9 @@ public class Read {
 			}
 
 			/*
-			 * double normalised = 0; normalised = aux.getExpected() -
-			 * min.get(nData); normalised = normalised / (max.get(nData) -
-			 * min.get(nData)); aux.setExpected(normalised);
+			 * double normalised = 0; normalised = aux.getExpected() - min.get(nData);
+			 * normalised = normalised / (max.get(nData) - min.get(nData));
+			 * aux.setExpected(normalised);
 			 */
 
 		}
@@ -284,12 +296,10 @@ public class Read {
 
 	/*
 	 * TOKENS:: ID (Id of a neuron) LF (learning factor of a neuron) FAIL
-	 * (percentage of failure in the output) FTYPE (phases where the failure
-	 * will be applied) ACT (phases where the neuron will or not be active) ALFA
-	 * B G
+	 * (percentage of failure in the output) FTYPE (phases where the failure will be
+	 * applied) ACT (phases where the neuron will or not be active) ALFA B G
 	 */
-	public static ArrayList<NeuronConfig> readConfig(String file,
-			double lEARNING_FACTOR, int nNeurons) {
+	public static ArrayList<NeuronConfig> readConfig(String file, double lEARNING_FACTOR, int nNeurons) {
 		double dlf = lEARNING_FACTOR;
 		String line;
 
@@ -298,8 +308,8 @@ public class Read {
 			NeuronConfig c = new NeuronConfig(dlf, i);
 			configs.add(c);
 		}
-		
-		/*In case we want individual configurations for certain neurons*/
+
+		/* In case we want individual configurations for certain neurons */
 		if (file != null) {
 			try {
 
@@ -315,39 +325,33 @@ public class Read {
 						int index = line.indexOf("ID");
 						if (index == -1) {
 							filein.close();
-							throw new Exception(
-									"Error de formato en fichero de configuracion: ID");
+							throw new Exception("Error de formato en fichero de configuracion: ID");
 						}
 
-						String aux = line.substring(2 + index + 1,
-								2 + index + 2);
+						String aux = line.substring(2 + index + 1, 2 + index + 2);
 						c.setId(Integer.parseInt(aux));
 					} else {
 						int index = line.indexOf("ID");
 						if (index == -1) {
 							filein.close();
-							throw new Exception(
-									"Error de formato en fichero de configuracion: ID");
+							throw new Exception("Error de formato en fichero de configuracion: ID");
 						}
 
-						String aux = line.substring(2 + index + 1,
-								2 + index + 3);
+						String aux = line.substring(2 + index + 1, 2 + index + 3);
 						c.setId(Integer.parseInt(aux));
 					}
 
 					// LEARNING FACTOR
 					int index = line.indexOf("LF");
 					if (index != -1) {
-						String aux = line.substring(2 + index + 1,
-								2 + index + 5);
+						String aux = line.substring(2 + index + 1, 2 + index + 5);
 						c.setLf(Double.parseDouble(aux));
 					}
 
 					// FAIL
 					index = line.indexOf("FAIL");
 					if (index != -1) {
-						String aux = line.substring(4 + index + 1,
-								4 + index + 5);
+						String aux = line.substring(4 + index + 1, 4 + index + 5);
 						c.setFailure(Double.parseDouble(aux));
 					}
 
@@ -355,16 +359,14 @@ public class Read {
 
 					index = line.indexOf("FTYPE");
 					if (index != -1) {
-						String aux = line.substring(4 + index + 1,
-								4 + index + 2);
+						String aux = line.substring(4 + index + 1, 4 + index + 2);
 						c.setFailureType(Integer.parseInt(aux));
 					}
 
 					// ACTIVATION STATE
 					index = line.indexOf("ACT");
 					if (index != -1) {
-						String aux = line.substring(3 + index + 1,
-								3 + index + 2);
+						String aux = line.substring(3 + index + 1, 3 + index + 2);
 						int tmp3 = Integer.parseInt(aux);
 						if (tmp3 == 1) {
 							c.setActivation(true);
@@ -377,24 +379,21 @@ public class Read {
 					// ALFA
 					index = line.indexOf("ALFA");
 					if (index != -1) {
-						String aux = line.substring(4 + index + 1,
-								4 + index + 5);
+						String aux = line.substring(4 + index + 1, 4 + index + 5);
 						c.setAlfa(Double.parseDouble(aux));
 					}
 
 					// BETA
 					index = line.indexOf("B");
 					if (index != -1) {
-						String aux = line.substring(1 + index + 1,
-								1 + index + 5);
+						String aux = line.substring(1 + index + 1, 1 + index + 5);
 						c.setBeta(Double.parseDouble(aux));
 					}
 
 					// GAMMA
 					index = line.indexOf("G");
 					if (index != -1) {
-						String aux = line.substring(1 + index + 1,
-								1 + index + 5);
+						String aux = line.substring(1 + index + 1, 1 + index + 5);
 						c.setGamma(Double.parseDouble(aux));
 					}
 
@@ -413,8 +412,8 @@ public class Read {
 	public static void main(String[] args) {
 		ArrayList<NeuronConfig> list = new ArrayList<NeuronConfig>();
 		ArrayList<Case> cases = new ArrayList<Case>();
-	//	list = Read.readConfig(IronMan + "\\RED.txt");
-		cases = Read.read2(IronMan+ "\\Set de Casos\\Set de Casos\\Set de Casos MARN 1.3\\CANCER\\Cancer.net", 9, 1);
+		//	list = Read.readConfig(IronMan + "\\RED.txt");
+		cases = Read.read2(IronMan + "\\Set de Casos\\Set de Casos\\Set de Casos MARN 1.3\\CANCER\\Cancer.net", 9, 1);
 		list.size();
 	}
 }
