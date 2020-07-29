@@ -421,6 +421,7 @@ public class ConfigurationTestResults {
 		
 		
 		int i =1;
+		//TODO This should be recycled in a function
 		for(ExecutionResult aux: this.bpResults){
 			File f= new File(this.rootFolder, "BP"+i);
 			f.mkdir();

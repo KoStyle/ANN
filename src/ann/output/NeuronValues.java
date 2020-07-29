@@ -2,6 +2,7 @@ package ann.output;
 
 import ann.util.UpValueData;
 
+//TODO Make this generic for more than 1 or 2 "off" neurons, also, change naming conventions maybe
 public class NeuronValues {
 	private int neuronID, neuronID2;
 	private double downValue, result;

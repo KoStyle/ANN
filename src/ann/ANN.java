@@ -1320,7 +1320,7 @@ public class ANN {
 	 * @param rootDirectory The root directory where the results will be stored. It has to exist.
 	 */
 	public void testBench(ArrayList<Case> set, File rootDirectory) {
-		if (!rootDirectory.exists()) {
+		if (rootDirectory != null && !rootDirectory.exists()) {
 			rootDirectory.mkdir();
 		}
 		ConfigurationTestResults cfg = new ConfigurationTestResults(
@@ -1333,6 +1333,8 @@ public class ANN {
 		} else {
 			maxIterations = ITERATIONS;
 		}
+		
+		//TODO Recycle code for the love of god
 		// BACKPROPAGATION
 		if (ANN.BPON) {
 			for (int i = 0; i < maxIterations; i++) {
