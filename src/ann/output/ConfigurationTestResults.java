@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -691,9 +692,8 @@ public class ConfigurationTestResults {
 		
 		fw.close();
 		ArrayList<NeuronValues> inputnvs= new ArrayList<NeuronValues>();
-		ArrayList<NeuronValues> nvs= new ArrayList<NeuronValues>();
-		
-		
+		ArrayList<NeuronValues> nvs= new ArrayList<NeuronValues>();				
+				
 		int i =1;
 		//TODO This should be recycled in a function
 		for(ExecutionResult aux: this.bpResults){
@@ -854,6 +854,102 @@ public class ConfigurationTestResults {
 		
 	}
 	
+	private String getResultSummary() {
+		this.maxAg=0.;
+		for(ExecutionResult aux: this.agResults){
+			if(aux.getResult()>this.maxAg){
+				this.maxAg=aux.getResult();
+			}
+		}
+		
+		this.minAg=1.;
+		for(ExecutionResult aux: this.agResults){
+			if(aux.getResult()<this.minAg){
+				this.minAg=aux.getResult();
+			}
+		}
+		
+		this.maxBp=0.;
+		for(ExecutionResult aux: this.bpResults){
+			if(aux.getResult()>this.maxBp){
+				this.maxBp=aux.getResult();
+			}
+		}
+		
+		this.minBp=1.;
+		for(ExecutionResult aux: this.bpResults){
+			if(aux.getResult()<this.minBp){
+				this.minBp=aux.getResult();
+			}
+		}
+		
+		this.maxApp=0.;
+		for(ExecutionResult aux: this.appResults){
+			if(aux.getResult()>this.maxApp){
+				this.maxApp=aux.getResult();
+			}
+		}
+		
+		this.minApp=1.;
+		for(ExecutionResult aux: this.appResults){
+			if(aux.getResult()<this.minApp){
+				this.minApp=aux.getResult();
+			}
+		}
+		ArrayList<String> outputLines = new ArrayList<String>();
+		outputLines.add("CONFIGURACION DEL SET DE EJECUCIONES");
+		outputLines.add("");
+		outputLines.add("MAX ERROR BP: "+ this.MAX_ERROR);
+		outputLines.add("LEARNING FACTOR BP: "+ this.LEARNING_FACTOR);
+		outputLines.add("MOMENTUM FACTOR: "+ this.MOMENTUM_FLAG);
+		outputLines.add("MOMENTUM FACTOR: "+ this.MOMENTUM_FACTOR);
+		outputLines.add("");
+		outputLines.add("CROSSOVER PROBABILITY: "+ this.CROSSOVER);
+		outputLines.add("MUTATION PROBABILITY: "+ this.MUTFACT);
+		outputLines.add("MUTATION CONSTANT: "+ this.MUTCTE);
+		outputLines.add("MAX ERROR AG: "+ this.GENERR);
+		outputLines.add("GENERATIONS AG: "+ this.GENERATIONS);
+		outputLines.add("PAIRS OF INDIVIDUALS: "+ this.INDVIDUAL_PAIRS);
+		outputLines.add("");
+		outputLines.add("OUT TYPE: "+ this.OUTTYPE);
+		outputLines.add("POSITIVE LIMIT: " + this.POSITIVE_PREDICTION);
+		outputLines.add("NEGATIVE LIMIT: " + this.NEGATIVE_PREDICTION);
+		outputLines.add("");
+		outputLines.add("PENALTY INITIAL RANGE: "+ this.INIRANG);
+		outputLines.add("PENALTY MEDIUM RANGE: "+ this.MIDRANG);
+		outputLines.add("PENALTY LOW RANGE: "+ this.LOWRANG);
+		outputLines.add("");
+		outputLines.add("HIGH PENALTY: "+ this.HIGHPEN);
+		outputLines.add("MEDIUM PENALTY: "+ this.MEDPEN);
+		outputLines.add("LOW PENALTY: "+ this.LOWPEN);
+		outputLines.add("");
+		outputLines.add("AVERAGE BP: "+ this.meanResultBp);
+		outputLines.add("MAX BP: " + this.maxBp);
+		outputLines.add("MIN BP: " + this.minBp);
+		outputLines.add("");
+		outputLines.add("AVERAGE AG: "+ this.meanResultAg);
+		outputLines.add("MAX AG: " + this.maxAg);
+		outputLines.add("MIN AG: " + this.minAg);
+		outputLines.add("");
+		outputLines.add("AVERAGE APP: "+ this.meanResultApp);
+		outputLines.add("MAX APP: " + this.maxApp);
+		outputLines.add("MIN APP: " + this.minApp);
+		outputLines.add("");
+		outputLines.add("ARCHITECTURE");
+		outputLines.add("INPUTS: "+ this.params);
+		outputLines.add("HIDDEN LAYERS: "+ this.nHidden);
+		outputLines.add("NEURONS PER LAYER: "+ this.nNeuHidden);
+		outputLines.add("OUTPUTS: "+ this.out);
+		
+		String result = outputLines.get(0);
+		for(int i=1; i<outputLines.size(); i++) {
+			result= result + "\n" + outputLines.get(i);
+		}
+		
+		return result;
+		
+	}
+	
 	/** @return the greatest common denominator */
 	private static long gcd(long a, long b) {
 	    return b == 0 ? a : gcd(b, a % b);
@@ -869,7 +965,8 @@ public class ConfigurationTestResults {
 			throw new SQLException("Null database connection in writeResultsDB");
 		}
 		
-		String insert_statement = "INSERT INTO NNRESULS VALUES (?, ?, ?, ?)";
+		String select_max_resid = "SELECT MAX(id_result) as max_id FROM NNRESULTS WHERE id_setup=?";
+		String insert_statement = "INSERT INTO NNRESULTS VALUES (?, ?, ?, ?, ?, ?)";
 		String insert_evo_statement = "INSERT INTO NNRESULTEVO VALUES (?, ?, ?, ?, ?)";
 		
 		//TODO Add support for multiple result writes.Right now it only supports one result to be written (because of parallel runs and the id_result value)
@@ -887,6 +984,8 @@ public class ConfigurationTestResults {
 			int caseZero=0;
 			int caseOne=0;
 			
+			
+			//TODO This is a piece of sh*t that only works with 1-output classifiers
 			for(Case cs:this.dataset) {
 				if(cs.getExpected().get(0)==0) {  //if the first expected (first output neuron for a 2 class classifier) is 0, increase counter
 					caseZero++;
@@ -895,14 +994,33 @@ public class ConfigurationTestResults {
 			caseOne= this.dataset.size()-caseZero;
 			
 			String ratio = "Ratio cases 0 to cases 1= " + ConfigurationTestResults.asFraction(caseZero, caseOne);
+			
+			
+			
+			
 			try {
-				PreparedStatement query= conn.prepareStatement(insert_statement);
+				//we get the next id_result for the actual setup
+				int next_id_result=-1;
+				PreparedStatement query= conn.prepareStatement(select_max_resid);
+				query.setInt(1, id_setup);
+				query.execute();
+				ResultSet rs = query.getResultSet();
+				if(rs != null) {
+					next_id_result=rs.getInt("max_id") + 1;
+				}else {
+					next_id_result=0;
+				}
+				
+				query= conn.prepareStatement(insert_statement);
 				query.setInt(1, id_setup);
 				query.setInt(2, id_result);
 				query.setDouble(3, er.getResult());
 				query.setString(4, ratio);
+				query.setString(5, this.getResultSummary());
+				query.setString(6, "");  //TODO change to put the actual method used for training here because why not
 				query.execute();
 				query.close();
+				
 				for(TrainAndTestError tat: er.getEvolution()) {
 					query= conn.prepareStatement(insert_evo_statement);
 					query.setInt(1, id_setup);
@@ -913,9 +1031,11 @@ public class ConfigurationTestResults {
 					query.execute();
 					query.close();
 				}
+				
 				if(!conn.getAutoCommit()) {					
 					conn.commit();
 				}
+				
 			}catch (SQLException e){
 				if(!conn.getAutoCommit()) {					
 					conn.rollback();

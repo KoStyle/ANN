@@ -94,14 +94,14 @@ public class ANN {
 	 * than 'POSITIVE_PREDICCTION', the output is turned into a one (true). If the
 	 * output is smaller than 'NEGATIVE_PREDICTION' then the output is zero (false)
 	 */
-	private final static double POSITIVE_PREDICTION = 0.6;
-	private final static double NEGATIVE_PREDICTION = 0.4;
+	private final static double POSITIVE_PREDICTION = 0.5;
+	private final static double NEGATIVE_PREDICTION = 0.5;
 
 	/**
 	 * Percentage of problem cases that will be used for trainning. The remaining
 	 * cases will conform the test set.
 	 */
-	private final double trainingPercentage = 0.3;
+	private final double trainingPercentage = 0.7;
 
 	private final static double MAX_ERROR_BP = 0.01;
 	private static int CICLES_BP = 200;
@@ -602,7 +602,7 @@ public class ANN {
 			 * se calcula el error acumulado por cada individuo para tener el fit (cuanto
 			 * menos error mejor)
 			 */
-			//			totalError = this.testPack(casosTrain);
+			//totalError = this.testPack(casosTrain);
 			totalError = this.testPackTSS(casosTrain);
 
 			/* Penalizacion */
@@ -611,17 +611,17 @@ public class ANN {
 				double penalty = 0;
 				switch (ANN.PENFUNC) {
 				case 1:
-					penalty = this.penaltyFunc(casosTrain, 20);
+					penalty = this.penaltyFunc(casosTrain, this.nParam);
 					break;
 				case 2:
-					penalty = this.penaltyFunc2(casosTrain, 20);
+					penalty = this.penaltyFunc2(casosTrain, this.nParam);
 					break;
 				case 3:
-					penalty = this.penaltyFunc3(casosTrain, 20);
+					penalty = this.penaltyFunc3(casosTrain, this.nParam);
 					aux = Math.pow(aux, -4);
 					break;
 				case 4:
-					penalty = this.penaltyFunc4(casosTrain, 20);
+					penalty = this.penaltyFunc4(casosTrain, this.nParam);
 					break;
 				}
 				aux += penalty;
@@ -631,11 +631,11 @@ public class ANN {
 			/*
 			 * Recording the maximum error and the minimum error
 			 */
-			if (aux > maxError) {
-				maxError = aux;
+			if (1-aux > maxError) {
+				maxError = 1-aux;
 			}
-			if (aux < minError) {
-				minError = aux;
+			if (1-aux < minError) {
+				minError = 1-aux;
 				minIndex = a.indexOf(indi);
 			}
 
@@ -750,14 +750,14 @@ public class ANN {
 		minError = res.get(1);
 
 		//		if(!ANN.PENALTY){
-		this.setProperFit(population, minError, maxError);
+		//this.setProperFit(population, minError, maxError);
 		//		}
 		for (int count = 0; count < ANN.GENERATIONS; count++) {
 
 			if (count % 10 == 0) {
 				System.out.println("Generacion " + Integer.toString(count));
-				System.out.println(maxError);
-				System.out.println(minError);
+				System.out.println("Max error =" + Double.toString(maxError));
+				System.out.println("Min error =" + Double.toString(minError));
 
 			}
 			maxError = 0;
@@ -1095,7 +1095,7 @@ public class ANN {
 			this.setWeights(this.geneticTraining(trainCases, null, null));
 		}
 
-		System.out.println("Acurancy:" + String.valueOf(this.testPack(testCases)));
+		System.out.println("Accuracy:" + String.valueOf(this.testPack(cases)));
 		return evolution;
 	}
 
@@ -1475,15 +1475,58 @@ public class ANN {
 		if (training == null || test == null) {
 			throw new Exception("No existe training o test");
 		}
-		Collections.shuffle(cases);
-
+		ArrayList<Case> positiveCases = new ArrayList<Case>();
+		ArrayList<Case> negativeCases = new ArrayList<Case>();
+		
+		//Split the cases to have good representation of each one
+		//TODO only works with single output (maybe averaging all of them?)(also, this functionality should be optional
+		for(Case c: cases) {
+			if(c.getExpected().get(0)==1) {
+				positiveCases.add(c);
+			}else {
+				negativeCases.add(c);
+			}
+		}
+		int totalTrainingCases = (int) Math.floor(cases.size() * this.trainingPercentage);
+		int totalTestCases = cases.size()-totalTrainingCases;
+				
+		Collections.shuffle(positiveCases);
+		Collections.shuffle(negativeCases);
+		
+		
 		int i;
-		for (i = 0; i <= cases.size() * this.trainingPercentage; i++) {
-			training.add(cases.get(i));
+		int maxIteratorTrain = (totalTrainingCases/2);
+		int maxIteratorTest = (totalTrainingCases/2);
+		for (i = 0; i <= maxIteratorTrain; i++) {
+			training.add(positiveCases.get(i%positiveCases.size()));
 		}
-		for (; i < cases.size(); i++) {
-			test.add(cases.get(i));
+		
+		Collections.shuffle(positiveCases);
+		for (i=0; i < maxIteratorTest; i++) {
+			test.add(positiveCases.get(i%positiveCases.size()));
 		}
+				
+		for (i = 0; i <= maxIteratorTrain; i++) {
+			training.add(negativeCases.get(i%negativeCases.size()));
+		}
+		Collections.shuffle(negativeCases);
+		for (i=0; i < maxIteratorTest; i++) {
+			test.add(negativeCases.get(i%negativeCases.size()));
+		}
+		
+		//we fill the sets in case we didn't have enough, at random
+//		if(training.size()<totalTrainingCases) {
+//			Collections.shuffle(cases);
+//			for(i=training.size(); i<totalTrainingCases; i++) {
+//				training.add(cases.get(i));
+//			}
+//		}
+//		if(test.size()<totalTestCases) {
+//			Collections.shuffle(cases);
+//			for(i=test.size(); i<totalTestCases; i++) {
+//				test.add(cases.get(i));
+//			}
+//		}
 
 	}
 
