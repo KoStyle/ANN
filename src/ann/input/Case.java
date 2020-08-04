@@ -19,10 +19,12 @@ public class Case {
 	private double meanValue;
 	@Deprecated
 	private double result;
-	private ArrayList<Double> expected;
+	private ArrayList<Double> expected, predicted, predictedPerc;
 	private ArrayList<Double> data;
 	private int nData;
 	private int nResults;
+	private int id;
+	private int sub_id;
 
 	/**
 	 * @return the nData
@@ -60,6 +62,17 @@ public class Case {
 		this.nResults= nResult;
 		this.data = new ArrayList<Double>();
 		this.expected=new ArrayList<Double>();
+	}
+	
+	@SuppressWarnings("unchecked")
+	public Case(Case kaseo) {
+		this.nData=kaseo.nData;
+		this.nResults=kaseo.nResults;
+		this.expected= (ArrayList<Double>) kaseo.expected.clone();
+		this.predicted= new ArrayList<Double>();
+		this.predictedPerc= new ArrayList<Double>();
+		this.id=kaseo.id;
+		this.sub_id=kaseo.sub_id;
 	}
 
 	public void addData(Double data) throws Exception {
@@ -200,5 +213,37 @@ public class Case {
 		
 		ret.setExpected(original.getExpected());
 		return ret;
+	}
+
+	public int getId() {
+		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
+	}
+
+	public int getSub_id() {
+		return sub_id;
+	}
+
+	public void setSub_id(int sub_id) {
+		this.sub_id = sub_id;
+	}
+
+	public ArrayList<Double> getPredicted() {
+		return predicted;
+	}
+
+	public void setPredicted(ArrayList<Double> predicted) {
+		this.predicted = predicted;
+	}
+
+	public ArrayList<Double> getPredictedPerc() {
+		return predictedPerc;
+	}
+
+	public void setPredictedPerc(ArrayList<Double> predictedPerc) {
+		this.predictedPerc = predictedPerc;
 	}
 }

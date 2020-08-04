@@ -72,6 +72,9 @@ public class Read {
 			for (String output : expectedOutput) {
 				aux.addExpected(Double.valueOf(output));
 			}
+			
+			aux.setId(rs.getInt("uid"));
+			aux.setSub_id(rs.getInt("tid"));
 
 			caseSet.add(aux);
 

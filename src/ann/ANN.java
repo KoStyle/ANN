@@ -160,6 +160,8 @@ public class ANN {
 	@SuppressWarnings("unused")
 	@Deprecated
 	private ArrayList<Double> stdDeviations;
+	
+	private ArrayList<Case> fullDataset;
 
 	/**
 	 * Main method, launches static methods with preset configurations.
@@ -1000,6 +1002,22 @@ public class ANN {
 		}
 		return 1 - (totalError / cases.size());
 	}
+	
+	
+	public ArrayList<Case> getDataSetPredictions(ArrayList<Case> cases){
+		ArrayList<Case> predictions = new ArrayList<Case>();
+		for(Case cass: cases) {
+			this.setInputs(cass.getInputsBP());
+			ArrayList<Double> predict = this.prediction(true);
+			ArrayList<Double> predictDouble = this.prediction(false);
+			Case prediction = new Case(cass);
+			prediction.setPredicted(predict);
+			prediction.setPredictedPerc(predictDouble);
+			predictions.add(prediction);			
+		}
+		
+		return predictions;
+	}
 
 	/**
 	 * This method calculates the acumulated error between the expected output and
@@ -1051,7 +1069,8 @@ public class ANN {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-
+		
+		
 		if (evolution) {
 			return this.backPropagationLearning(trainCases, testCases);
 		}
@@ -1158,6 +1177,7 @@ public class ANN {
 		ExecutionResult er = new ExecutionResult(iteration);
 		er.setResult(this.testPack(set));
 		er.setWeights(this.getWeights());
+		er.caseClassification= this.getDataSetPredictions(this.fullDataset);
 		this.neuronOff1(er, set);
 		this.neuronOff2(er, set);
 		this.neuronOn1(er, set);
@@ -1374,6 +1394,7 @@ public class ANN {
 	 *                The full set of cases for the learning process
 	 */
 	public ConfigurationTestResults testBench(ArrayList<Case> set) {
+		this.fullDataset=set;
 
 		ConfigurationTestResults cfg = new ConfigurationTestResults(null);
 		this.setCfg(cfg);

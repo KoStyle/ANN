@@ -20,6 +20,7 @@ public class ExecutionResult {
 	private ArrayList<Double> weights= new ArrayList<Double>();
 	private ArrayList<Case> failures= new ArrayList<Case>();
 	private ArrayList<NoiseResult> noiseResults= new ArrayList<NoiseResult>();
+	public ArrayList<Case> caseClassification = new ArrayList<Case>();
 	private int iteration;
 	
 	public ExecutionResult(int iteration){

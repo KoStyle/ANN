@@ -995,9 +995,7 @@ public class ConfigurationTestResults {
 			
 			String ratio = "Ratio cases 0 to cases 1= " + ConfigurationTestResults.asFraction(caseZero, caseOne);
 			
-			
-			
-			
+					
 			try {
 				//we get the next id_result for the actual setup
 				int next_id_result=-1;
