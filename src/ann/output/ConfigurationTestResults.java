@@ -32,6 +32,7 @@ public class ConfigurationTestResults {
 	public  ArrayList<Case> dataset = null;
 	private double meanResultBp, meanResultAg, meanResultApp, maxBp, maxAg, minBp, minAg, maxApp, minApp;
 	private int params, nHidden, nNeuHidden, out;
+	public String selectCasesStatement;
 	
 	private double POSITIVE_PREDICTION;
 	private double NEGATIVE_PREDICTION;
@@ -940,6 +941,7 @@ public class ConfigurationTestResults {
 		outputLines.add("HIDDEN LAYERS: "+ this.nHidden);
 		outputLines.add("NEURONS PER LAYER: "+ this.nNeuHidden);
 		outputLines.add("OUTPUTS: "+ this.out);
+		outputLines.add(this.selectCasesStatement);
 		
 		String result = outputLines.get(0);
 		for(int i=1; i<outputLines.size(); i++) {
@@ -966,8 +968,13 @@ public class ConfigurationTestResults {
 		}
 		
 		String select_max_resid = "SELECT MAX(id_result) as max_id FROM NNRESULTS WHERE id_setup=?";
-		String insert_statement = "INSERT INTO NNRESULTS VALUES (?, ?, ?, ?, ?, ?)";
+		String insert_statement = "INSERT INTO NNRESULTS VALUES (?, ?, ?, ?, ?, ?, ?)";
 		String insert_evo_statement = "INSERT INTO NNRESULTEVO VALUES (?, ?, ?, ?, ?)";
+		String insert_weights_statement = "INSERT INTO RESULT_WEIGHTS VALUES (?, ?, ?, ?)";
+		String insert_classif_statement = "INSERT INTO RESULT_CLASSIFICATIONS VALUES (?, ?, ?, ?, ?, ?, ?)";
+		
+		boolean originalAutocommit = conn.getAutoCommit();
+		conn.setAutoCommit(false);
 		
 		//TODO Add support for multiple result writes.Right now it only supports one result to be written (because of parallel runs and the id_result value)
 		//We get the first (if more than one) result
@@ -995,61 +1002,89 @@ public class ConfigurationTestResults {
 			
 			String ratio = "Ratio cases 0 to cases 1= " + ConfigurationTestResults.asFraction(caseZero, caseOne);
 			
-					
-			try {
-				//we get the next id_result for the actual setup
-				int next_id_result=-1;
-				PreparedStatement query= conn.prepareStatement(select_max_resid);
-				query.setInt(1, id_setup);
-				query.execute();
-				ResultSet rs = query.getResultSet();
-				if(rs != null) {
-					next_id_result=rs.getInt("max_id") + 1;
+			int totalEr = this.bpResults.size() + this.agResults.size() + this.appResults.size();
+			String method = "";
+			for(int erIndex =0; erIndex<totalEr; erIndex++) {
+				if(erIndex < this.bpResults.size()) {
+					er = this.bpResults.get(erIndex);
+					method = "BP";
+				}else if(erIndex < this.bpResults.size() + this.agResults.size()) {
+					er = this.agResults.get(erIndex-this.bpResults.size());
+					method = "AG";
 				}else {
-					next_id_result=0;
+					er = this.appResults.get(erIndex-this.bpResults.size() - this.agResults.size());
+					method= "APP";
 				}
 				
-				query= conn.prepareStatement(insert_statement);
-				query.setInt(1, id_setup);
-				query.setInt(2, id_result);
-				query.setDouble(3, er.getResult());
-				query.setString(4, ratio);
-				query.setString(5, this.getResultSummary());
-				query.setString(6, "");  //TODO change to put the actual method used for training here because why not
-				query.execute();
-				query.close();
-				
-				for(TrainAndTestError tat: er.getEvolution()) {
-					query= conn.prepareStatement(insert_evo_statement);
+				try {										
+					//we get the next id_result for the actual setup
+					int next_id_result=-1;
+					PreparedStatement query= conn.prepareStatement(select_max_resid);
 					query.setInt(1, id_setup);
-					query.setInt(2, id_result);
-					query.setInt(3, tat.getCicle());
-					query.setDouble(4, tat.getTraining());
-					query.setDouble(5, tat.getTest());
+					query.execute();
+					ResultSet rs = query.getResultSet();
+					if(rs != null) {
+						next_id_result=rs.getInt("max_id") + 1;
+					}else {
+						next_id_result=0;
+					}
+					
+					query= conn.prepareStatement(insert_statement);
+					query.setInt(1, id_setup);
+					query.setInt(2, next_id_result);
+					query.setDouble(3, er.getResult());
+					query.setString(4, ratio);
+					query.setString(5, this.getResultSummary());
+					query.setString(6, method);  
+					query.setString(7, er.getWeights().toString());
 					query.execute();
 					query.close();
+					
+					System.out.println("Grabando evo");
+					//We log the evolution of the Executions error
+					query= conn.prepareStatement(insert_evo_statement);
+					for(TrainAndTestError tat: er.getEvolution()) {
+						query.setInt(1, id_setup);
+						query.setInt(2, next_id_result);
+						query.setInt(3, tat.getCicle());
+						query.setDouble(4, tat.getTraining());
+						query.setDouble(5, tat.getTest());
+						query.addBatch();
+					}
+					query.executeBatch();
+					query.close();
+					
+					System.out.println("Grabando classi");
+					//We log the predicted results for the entire dataset
+					query = conn.prepareStatement(insert_classif_statement);
+					for(Case cas: er.caseClassification) {
+						query.setInt(1, id_setup);
+						query.setInt(2, next_id_result);
+						query.setInt(3, cas.getId());
+						query.setInt(4, cas.getSub_id());
+						query.setString(5, cas.getExpected().toString());
+						query.setString(6, cas.getPredicted().toString());
+						query.setString(7, cas.getPredictedPerc().toString());
+						query.addBatch();
+					}
+					query.executeBatch();
+					query.close();				
+					
+					System.out.println("Pues ya estaria check la " + String.valueOf(next_id_result));
+					if(!conn.getAutoCommit()) {					
+						conn.commit();
+						conn.setAutoCommit(originalAutocommit);
+					}
+					
+				}catch (SQLException e){
+					if(!conn.getAutoCommit()) {					
+						conn.rollback();
+						conn.setAutoCommit(originalAutocommit);
+					}
+					e.printStackTrace();
+					throw new SQLException("Couldn't write a result in the DB");
 				}
-				
-				if(!conn.getAutoCommit()) {					
-					conn.commit();
-				}
-				
-			}catch (SQLException e){
-				if(!conn.getAutoCommit()) {					
-					conn.rollback();
-				}
-				e.printStackTrace();
-				throw new SQLException("Couldn't write the result in the DB");
-			}
-			
-			
-			
-			
-			
-			
-		}
-		
-		
-		
+			}							
+		}		
 	}
 }

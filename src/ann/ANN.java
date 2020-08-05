@@ -80,6 +80,7 @@ public class ANN {
 	private int nHiddenLayers;// Numero de capas ocultas de la red
 	private int nNeuHidLay; // Neurons per Hidden layer
 	private int nOutput;
+	private String selectCasesStatement;
 	/**
 	 * A reference to the outputs of the network
 	 */
@@ -103,7 +104,7 @@ public class ANN {
 	 */
 	private final double trainingPercentage = 0.7;
 
-	private final static double MAX_ERROR_BP = 0.01;
+	private final static double MAX_ERROR_BP = 0.24;
 	private static int CICLES_BP = 200;
 	private static double LEARNING_FACTOR;
 	private static double MOMFACTOR = 0.5; //momentum factor
@@ -146,7 +147,7 @@ public class ANN {
 
 	private static final boolean EVOLUTIONGRAPH = true;
 
-	private static final boolean NOISE_ON = true;
+	private static final boolean NOISE_ON = false;
 
 	private static final boolean SWEEP = false;
 	private static int PENFUNC = 1;
@@ -160,7 +161,7 @@ public class ANN {
 	@SuppressWarnings("unused")
 	@Deprecated
 	private ArrayList<Double> stdDeviations;
-	
+
 	private ArrayList<Case> fullDataset;
 
 	/**
@@ -219,12 +220,14 @@ public class ANN {
 		this.nHiddenLayers = ac.getHidLay();
 		this.nNeuHidLay = ac.getNeuronsHidLay();
 		this.nOutput = ac.getNoutput();
+		this.selectCasesStatement = ac.getSelectCasesStatement();
 		ANN.LEARNING_FACTOR = ac.getLFactor();
 		ANN.MOMFACTOR = ac.getMFactor();
 		ANN.CROSSOVER = ac.getCrossover();
 		ANN.MUTCTE = ac.getmCte();
 		ANN.MUTFACT = ac.getMutFactor();
 		ANN.GENERATIONS = ac.getGenerations();
+		ANN.CICLES_BP = ac.getGenerations() * 10;
 		ANN.INDVIDUAL_PAIRS = ac.getPairs();
 		ANN.AGON = ac.isAgon();
 		ANN.APPON = ac.isAppon();
@@ -401,9 +404,10 @@ public class ANN {
 
 			if (i >= trainCases.size()) {
 				i = 0;
+				Collections.shuffle(trainCases);
 			}
 
-			Case aux = trainCases.get(new Random().nextInt(trainCases.size()));
+			Case aux = trainCases.get(i);
 
 			// TODO optimizar esto
 			this.setInputs(aux.getInputsBP());
@@ -423,7 +427,7 @@ public class ANN {
 			i++;
 			j++;
 			errorTrain = 1 - this.testPack(trainCases);
-			if (testCases != null) {
+			if (testCases != null && j % 10 == 0) {
 				errorTest = 1 - this.testPack(testCases);
 				evolution.add(new TrainAndTestError(errorTrain, errorTest, j));
 			}
@@ -633,11 +637,11 @@ public class ANN {
 			/*
 			 * Recording the maximum error and the minimum error
 			 */
-			if (1-aux > maxError) {
-				maxError = 1-aux;
+			if (1 - aux > maxError) {
+				maxError = 1 - aux;
 			}
-			if (1-aux < minError) {
-				minError = 1-aux;
+			if (1 - aux < minError) {
+				minError = 1 - aux;
 				minIndex = a.indexOf(indi);
 			}
 
@@ -1002,20 +1006,19 @@ public class ANN {
 		}
 		return 1 - (totalError / cases.size());
 	}
-	
-	
-	public ArrayList<Case> getDataSetPredictions(ArrayList<Case> cases){
+
+	public ArrayList<Case> getDataSetPredictions(ArrayList<Case> cases) {
 		ArrayList<Case> predictions = new ArrayList<Case>();
-		for(Case cass: cases) {
+		for (Case cass : cases) {
 			this.setInputs(cass.getInputsBP());
 			ArrayList<Double> predict = this.prediction(true);
 			ArrayList<Double> predictDouble = this.prediction(false);
 			Case prediction = new Case(cass);
 			prediction.setPredicted(predict);
 			prediction.setPredictedPerc(predictDouble);
-			predictions.add(prediction);			
+			predictions.add(prediction);
 		}
-		
+
 		return predictions;
 	}
 
@@ -1069,8 +1072,7 @@ public class ANN {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
-		
+
 		if (evolution) {
 			return this.backPropagationLearning(trainCases, testCases);
 		}
@@ -1177,11 +1179,11 @@ public class ANN {
 		ExecutionResult er = new ExecutionResult(iteration);
 		er.setResult(this.testPack(set));
 		er.setWeights(this.getWeights());
-		er.caseClassification= this.getDataSetPredictions(this.fullDataset);
-		this.neuronOff1(er, set);
-		this.neuronOff2(er, set);
-		this.neuronOn1(er, set);
+		er.caseClassification = this.getDataSetPredictions(this.fullDataset);
 		if (ANN.NOISE_ON) {
+			this.neuronOff1(er, set);
+			this.neuronOff2(er, set);
+			this.neuronOn1(er, set);
 			ArrayList<NoiseResult> nrs;
 			ArrayList<Case> noisedSet;
 			nrs = new ArrayList<>();
@@ -1394,11 +1396,12 @@ public class ANN {
 	 *                The full set of cases for the learning process
 	 */
 	public ConfigurationTestResults testBench(ArrayList<Case> set) {
-		this.fullDataset=set;
+		this.fullDataset = set;
 
 		ConfigurationTestResults cfg = new ConfigurationTestResults(null);
 		this.setCfg(cfg);
 		cfg.dataset = set;
+		cfg.selectCasesStatement = this.selectCasesStatement;
 		int iteration = 0;
 		int maxIterations;
 		if (SWEEP) {
@@ -1498,56 +1501,55 @@ public class ANN {
 		}
 		ArrayList<Case> positiveCases = new ArrayList<Case>();
 		ArrayList<Case> negativeCases = new ArrayList<Case>();
-		
+
 		//Split the cases to have good representation of each one
 		//TODO only works with single output (maybe averaging all of them?)(also, this functionality should be optional
-		for(Case c: cases) {
-			if(c.getExpected().get(0)==1) {
+		for (Case c : cases) {
+			if (c.getExpected().get(0) == 1) {
 				positiveCases.add(c);
-			}else {
+			} else {
 				negativeCases.add(c);
 			}
 		}
 		int totalTrainingCases = (int) Math.floor(cases.size() * this.trainingPercentage);
-		int totalTestCases = cases.size()-totalTrainingCases;
-				
+		int totalTestCases = cases.size() - totalTrainingCases;
+
 		Collections.shuffle(positiveCases);
 		Collections.shuffle(negativeCases);
-		
-		
+
 		int i;
-		int maxIteratorTrain = (totalTrainingCases/2);
-		int maxIteratorTest = (totalTrainingCases/2);
+		int maxIteratorTrain = (totalTrainingCases / 2);
+		int maxIteratorTest = (totalTrainingCases / 2);
 		for (i = 0; i <= maxIteratorTrain; i++) {
-			training.add(positiveCases.get(i%positiveCases.size()));
+			training.add(positiveCases.get(i % positiveCases.size()));
 		}
-		
+
 		Collections.shuffle(positiveCases);
-		for (i=0; i < maxIteratorTest; i++) {
-			test.add(positiveCases.get(i%positiveCases.size()));
+		for (i = 0; i < maxIteratorTest; i++) {
+			test.add(positiveCases.get(i % positiveCases.size()));
 		}
-				
+
 		for (i = 0; i <= maxIteratorTrain; i++) {
-			training.add(negativeCases.get(i%negativeCases.size()));
+			training.add(negativeCases.get(i % negativeCases.size()));
 		}
 		Collections.shuffle(negativeCases);
-		for (i=0; i < maxIteratorTest; i++) {
-			test.add(negativeCases.get(i%negativeCases.size()));
+		for (i = 0; i < maxIteratorTest; i++) {
+			test.add(negativeCases.get(i % negativeCases.size()));
 		}
-		
+
 		//we fill the sets in case we didn't have enough, at random
-//		if(training.size()<totalTrainingCases) {
-//			Collections.shuffle(cases);
-//			for(i=training.size(); i<totalTrainingCases; i++) {
-//				training.add(cases.get(i));
-//			}
-//		}
-//		if(test.size()<totalTestCases) {
-//			Collections.shuffle(cases);
-//			for(i=test.size(); i<totalTestCases; i++) {
-//				test.add(cases.get(i));
-//			}
-//		}
+		//		if(training.size()<totalTrainingCases) {
+		//			Collections.shuffle(cases);
+		//			for(i=training.size(); i<totalTrainingCases; i++) {
+		//				training.add(cases.get(i));
+		//			}
+		//		}
+		//		if(test.size()<totalTestCases) {
+		//			Collections.shuffle(cases);
+		//			for(i=test.size(); i<totalTestCases; i++) {
+		//				test.add(cases.get(i));
+		//			}
+		//		}
 
 	}
 
@@ -1594,6 +1596,9 @@ public class ANN {
 		Connection conn = Read.getDBConnection(dbfile);
 		ANNConfig ac = Read.readConfigDB(conn, id_setup);
 		ArrayList<Case> cases = null;
+
+		//Configuration Overrides
+		ac.setmFactor(0.2);
 
 		try {
 			cases = Read.readFromDB(conn, ac.getSelectCasesStatement());
